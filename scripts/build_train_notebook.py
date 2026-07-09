@@ -157,7 +157,7 @@ with torch.no_grad():
             out = model(batch)
             probs.append(softmax(out, dim=1).cpu().numpy())
         probs = np.concatenate(probs)
-        _, _, _, c = correct_preds(probs, s['labels'])
+        _, _, _, _, c = correct_preds(probs, s['labels'])   # returns events,preds,deltas,tol,correct
         correct.append(c)
         if i % 50 == 0: print(f"eval {i}/{len(val_ds)}")
 PCE = float(np.mean(np.concatenate(correct))) if len(correct) else 0.0
