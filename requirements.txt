@@ -1,0 +1,15 @@
+# Swing project — pose extraction + a small temporal event model.
+torch>=2.0            # the event detector (train on Colab GPU)
+torchvision>=0.15
+numpy>=1.24
+pandas>=2.0           # GolfDB annotations
+scipy>=1.10
+opencv-python>=4.8    # video I/O + frame ops
+mediapipe>=0.10       # off-the-shelf pose estimation (CPU-friendly) -> keypoint sequences
+tqdm>=4.65
+
+# Notes:
+# - Pose estimation is off-the-shelf (MediaPipe/HRNet); we do NOT train it.
+# - Event-detector training runs on a Colab GPU (train/colab_swingnet.ipynb).
+# - Frontier-baseline comparison (litmus) reuses the TrueFoundry gateway via the
+#   openai SDK, same as the caddie project.

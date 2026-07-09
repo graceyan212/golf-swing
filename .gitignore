@@ -1,0 +1,13 @@
+# data / models (large)
+data/videos/
+data/*.zip
+data/poses/
+models/
+*.pt
+*.pth
+# python
+__pycache__/
+*.pyc
+.venv/
+# os
+.DS_Store
