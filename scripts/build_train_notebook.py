@@ -24,13 +24,17 @@ code("""
 """)
 
 code("""
-# 2) Get the GolfDB code (model/dataloader/eval/util + golfDB.mat) + the video clips
+# 2) Get the GolfDB code + clips (idempotent — safe to re-run; won't re-download)
+import os
 %cd /content
-!rm -rf GolfDB && git clone -q https://github.com/wmcnally/GolfDB
+if not os.path.isdir('GolfDB'):
+    !git clone -q https://github.com/wmcnally/GolfDB
 %cd /content/GolfDB
-# videos_160 (~667MB) straight from the dataset's Google Drive
-!gdown -q 1uBwRxFxW04EqG87VCoX3l6vXeV5T5JYJ -O data/videos_160.zip
-!cd data && unzip -o -q videos_160.zip && ls videos_160 | wc -l
+if not os.path.isdir('data/videos_160'):
+    # videos_160 (~667MB) straight from the dataset's Google Drive (only if missing)
+    !gdown -q 1uBwRxFxW04EqG87VCoX3l6vXeV5T5JYJ -O data/videos_160.zip
+    !cd data && unzip -o -q videos_160.zip
+print('clips:', len(os.listdir('data/videos_160')))
 # build the 4 cross-val splits from golfDB.pkl (repo ships the annotations; its
 # README's generate_splits.py is NOT in the clone, so make the splits directly)
 import pandas as pd, glob
