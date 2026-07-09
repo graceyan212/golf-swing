@@ -31,9 +31,14 @@ code("""
 # videos_160 (~667MB) straight from the dataset's Google Drive
 !gdown -q 1uBwRxFxW04EqG87VCoX3l6vXeV5T5JYJ -O data/videos_160.zip
 !cd data && unzip -o -q videos_160.zip && ls videos_160 | wc -l
-# convert the .mat annotations -> dataframe + the 4 cross-val splits
-!python generate_splits.py
-!ls data/*.pkl
+# build the 4 cross-val splits from golfDB.pkl (repo ships the annotations; its
+# README's generate_splits.py is NOT in the clone, so make the splits directly)
+import pandas as pd, glob
+_df = pd.read_pickle('data/golfDB.pkl')
+for _s in range(1, 5):
+    _df[_df['split'] != _s].reset_index(drop=True).to_pickle(f'data/train_split_{_s}.pkl')
+    _df[_df['split'] == _s].reset_index(drop=True).to_pickle(f'data/val_split_{_s}.pkl')
+print('splits:', sorted(glob.glob('data/*split*.pkl')))
 """)
 
 code("""
