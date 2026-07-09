@@ -7,14 +7,21 @@ def md(s): C.append(("markdown", s.strip("\n")))
 def code(s): C.append(("code", s.strip("\n")))
 
 md("""
-# Swing Sequencer — train SwingNet on GolfDB (Colab GPU)
+# Swing Sequencer — train SwingNet on GolfDB (Colab GPU) · v2
 
 Forks the SwingNet baseline (MobileNetV2 CNN + BiLSTM → 8 swing events) and trains it
 on GolfDB (1,400 clips), then reports **PCE** (Percent of Correct Events). One
 robustness change vs the original repo: the CNN backbone uses **torchvision's**
 pretrained MobileNetV2 (no fragile extra weights file).
 
-Runtime: **T4 GPU**. Data is pulled straight into Colab via gdown (fast). ~20–40 min.
+**v2 recipe** (aims for the paper's ~76% PCE): full-CNN fine-tuning (`UNFREEZE_CNN`),
+horizontal-flip augmentation (`FLIP_AUG`), 2500 iterations, batch 16, mixed precision.
+Every lever is a config toggle, so the notebook still runs on a T4 — see the
+**"v2 knobs & hardware"** note just above the Config cell.
+
+Runtime: **L4 or A100 recommended** (backprop through the full CNN at batch 16 needs the
+memory); a **T4** works with the fallbacks in that note. Data is pulled straight into
+Colab via gdown (fast).
 """)
 
 code("""
@@ -45,18 +52,36 @@ for _s in range(1, 5):
 print('splits:', sorted(glob.glob('data/*split*.pkl')))
 """)
 
+md("""
+### v2 knobs & hardware
+
+The three toggles below are the levers that move PCE from v1's ~43% toward the paper's
+~76%. All default to the **L4/A100** recipe; the notes say how to fall back to a **T4**.
+
+- **`UNFREEZE_CNN = True`** — fine-tunes the *whole* model (CNN + LSTM + head). This is
+  the single biggest lever, but backprop through the CNN needs the extra GPU memory of
+  an **L4 or A100**. On a **T4**: set `UNFREEZE_CNN = False` (freezes the MobileNetV2
+  backbone, trains only the LSTM + head — v1's behavior) **and** lower `BATCH` (e.g. 4).
+- **`FLIP_AUG = True`** — random horizontal-flip augmentation, **train split only**
+  (the paper credits it with ~+5% PCE). It's cheap, so it's safe to leave on for any GPU.
+- **`BATCH = 16`, `ITERATIONS = 2500`** — tuned for L4/A100. On a T4, drop `BATCH` to ~4.
+""")
+
 code("""
 # 3) Config
 import torch, os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-DEVICE      = 'cuda' if torch.cuda.is_available() else 'cpu'
-SPLIT       = 1
-SEQ_LENGTH  = 64
-BATCH       = 4          # T4-friendly with a frozen backbone + mixed precision
-ITERATIONS  = 1000       # bump for a better model; 1000 is a solid first run
-LR          = 1e-3
-FREEZE_CNN  = True       # freeze MobileNetV2, train only LSTM+head (fits a 15GB T4)
+DEVICE       = 'cuda' if torch.cuda.is_available() else 'cpu'
+SPLIT        = 1
+SEQ_LENGTH   = 64
+BATCH        = 16         # v2: good for an L4/A100. On a T4, lower to ~4
+ITERATIONS   = 2500       # v2: more iterations to approach the paper's ~76% PCE
+LR           = 1e-3
+UNFREEZE_CNN = True       # v2: fine-tune the FULL CNN (biggest lever; needs L4/A100).
+                          #     On a T4 set False to freeze the backbone (v1 behavior).
+FLIP_AUG     = True       # v2: horizontal-flip augmentation, train split only (~+5% PCE)
 print("device:", DEVICE)
+print(f"v2 config | batch={BATCH} iters={ITERATIONS} unfreeze_cnn={UNFREEZE_CNN} flip_aug={FLIP_AUG}")
 """)
 
 code('''
@@ -82,7 +107,9 @@ class EventDetector(nn.Module):
         return self.lin(r).view(B*T, 9)
 
 model = EventDetector(pretrained=True).to(DEVICE)
-if FREEZE_CNN:
+if UNFREEZE_CNN:
+    print("CNN backbone UNFROZEN — fine-tuning the full model (needs an L4/A100)")
+else:
     for p in model.cnn.parameters():
         p.requires_grad_(False)
     print("CNN backbone frozen — training LSTM + head only (T4-friendly)")
@@ -96,13 +123,30 @@ from dataloader import GolfDB, Normalize, ToTensor
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+class RandomFlip(object):
+    '''v2 augmentation: randomly flip the whole clip horizontally, along the WIDTH
+    dim of the (T,C,H,W) images tensor. ONE flip decision is applied to every one of
+    the T frames, so the clip stays consistent. Swing EVENT labels are temporal (they
+    index *which frame*), so a horizontal flip does NOT move them — labels pass through
+    untouched. Runs after ToTensor and before the in-place Normalize (train split only).'''
+    def __init__(self, p=0.5):
+        self.p = p
+    def __call__(self, sample):
+        images, labels = sample['images'], sample['labels']
+        if torch.rand(1).item() < self.p:
+            images = torch.flip(images, dims=[-1])   # (T,C,H,W): flip the width axis only
+        return {'images': images, 'labels': labels}
+
+norm = Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
+# TRAIN transform: ToTensor -> (optional) RandomFlip -> Normalize. Flip is train-only;
+# the eval cell keeps a plain ToTensor+Normalize pipeline (no augmentation).
+train_tf = [ToTensor()] + ([RandomFlip(p=0.5)] if FLIP_AUG else []) + [norm]
 train_ds = GolfDB(data_file=f'data/train_split_{SPLIT}.pkl', vid_dir='data/videos_160/',
                   seq_length=SEQ_LENGTH,
-                  transform=transforms.Compose([ToTensor(),
-                      Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])]),
+                  transform=transforms.Compose(train_tf),
                   train=True)
 train_dl = DataLoader(train_ds, batch_size=BATCH, shuffle=True, num_workers=2, drop_last=True)
-print("train clips:", len(train_ds))
+print("train clips:", len(train_ds), "| flip aug:", FLIP_AUG)
 """)
 
 code("""
@@ -112,7 +156,7 @@ criterion = torch.nn.CrossEntropyLoss(weight=weights)
 optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR)
 scaler = torch.cuda.amp.GradScaler()
 model.train()
-if FREEZE_CNN: model.cnn.eval()   # keep frozen BatchNorm in eval mode
+if not UNFREEZE_CNN: model.cnn.eval()   # frozen path: keep the backbone's BatchNorm in eval mode
 i, done = 0, False
 while not done:
     for sample in train_dl:
