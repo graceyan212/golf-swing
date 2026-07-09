@@ -15,3 +15,4 @@ data/videos_160/
 data/videos_160.zip
 vendor/
 .pytest_cache/
+data/*.task
