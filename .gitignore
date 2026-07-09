@@ -11,3 +11,6 @@ __pycache__/
 .venv/
 # os
 .DS_Store
+data/videos_160/
+data/videos_160.zip
+vendor/
