@@ -44,12 +44,14 @@ print('splits:', sorted(glob.glob('data/*split*.pkl')))
 code("""
 # 3) Config
 import torch, os
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+DEVICE      = 'cuda' if torch.cuda.is_available() else 'cpu'
 SPLIT       = 1
 SEQ_LENGTH  = 64
-BATCH       = 6          # T4-friendly (original used 22 on a bigger GPU)
+BATCH       = 4          # T4-friendly with a frozen backbone + mixed precision
 ITERATIONS  = 1000       # bump for a better model; 1000 is a solid first run
 LR          = 1e-3
+FREEZE_CNN  = True       # freeze MobileNetV2, train only LSTM+head (fits a 15GB T4)
 print("device:", DEVICE)
 """)
 
@@ -76,7 +78,12 @@ class EventDetector(nn.Module):
         return self.lin(r).view(B*T, 9)
 
 model = EventDetector(pretrained=True).to(DEVICE)
-print(sum(p.numel() for p in model.parameters())/1e6, "M params")
+if FREEZE_CNN:
+    for p in model.cnn.parameters():
+        p.requires_grad_(False)
+    print("CNN backbone frozen — training LSTM + head only (T4-friendly)")
+trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6
+print(f"{trainable:.2f}M trainable / {sum(p.numel() for p in model.parameters())/1e6:.1f}M total")
 ''')
 
 code("""
@@ -95,19 +102,23 @@ print("train clips:", len(train_ds))
 """)
 
 code("""
-# 6) Train (weighted CE — events are ~1:35 vs no-event)
+# 6) Train (weighted CE — events are ~1:35 vs no-event) + mixed precision
 weights = torch.FloatTensor([1/8]*8 + [1/35]).to(DEVICE)
 criterion = torch.nn.CrossEntropyLoss(weight=weights)
-optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR)
+scaler = torch.cuda.amp.GradScaler()
 model.train()
+if FREEZE_CNN: model.cnn.eval()   # keep frozen BatchNorm in eval mode
 i, done = 0, False
 while not done:
     for sample in train_dl:
         images = sample['images'].to(DEVICE)
-        labels = sample['labels'].to(DEVICE).view(BATCH*SEQ_LENGTH)
-        logits = model(images)
-        loss = criterion(logits, labels)
-        optimizer.zero_grad(); loss.backward(); optimizer.step()
+        labels = sample['labels'].to(DEVICE).view(images.size(0)*SEQ_LENGTH)
+        optimizer.zero_grad()
+        with torch.cuda.amp.autocast():
+            logits = model(images)
+            loss = criterion(logits, labels)
+        scaler.scale(loss).backward(); scaler.step(optimizer); scaler.update()
         if i % 20 == 0: print(f"it {i:4d}  loss {loss.item():.4f}")
         i += 1
         if i >= ITERATIONS: done = True; break
