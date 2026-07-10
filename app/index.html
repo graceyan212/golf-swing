@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Swing Check — analyze your golf swing</title>
+<style>
+  :root { --bg:#0f1216; --card:#181d24; --line:#2a313b; --txt:#e8edf2; --mut:#94a0ad; --grn:#39d98a; --red:#ff6b6b; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:16px; max-width:560px; margin:0 auto; }
+  h1 { font-size:22px; margin:.2em 0 0; }
+  .sub { color:var(--mut); font-size:14px; margin:.2em 0 1em; }
+  .banner { background:#20262f; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; color:var(--mut); margin-bottom:14px; }
+  .banner b { color:var(--txt); }
+  label.pick { display:block; background:var(--grn); color:#06231a; font-weight:700; text-align:center; padding:15px; border-radius:12px; cursor:pointer; font-size:17px; }
+  label.pick input { display:none; }
+  .status { margin:12px 0; padding:10px 12px; border-radius:8px; font-size:14px; background:var(--card); border:1px solid var(--line); }
+  .status.busy { color:#ffd27a; } .status.ok { color:var(--grn); } .status.err { color:var(--red); }
+  #app[hidden] { display:none; }
+  canvas#view { width:100%; height:auto; background:#000; border-radius:12px; display:block; margin-top:6px; }
+  .caption { color:var(--mut); font-size:13px; margin:6px 0 10px; text-align:center; }
+  .tabs { display:flex; gap:8px; margin-top:10px; }
+  .tabs button { flex:1; background:var(--card); color:var(--mut); border:1px solid var(--line); border-radius:9px; padding:9px 0; font-size:14px; font-weight:600; }
+  .tabs button.on { background:var(--grn); color:#06231a; border-color:var(--grn); }
+  .slider { margin:12px 0; }
+  .slider label { font-size:13px; color:var(--mut); }
+  .slider input[type=range] { width:100%; accent-color:var(--grn); }
+  #faults { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .fault { background:#241a1a; border:1px solid #4a2b2b; border-left:4px solid var(--red); border-radius:9px; padding:11px 13px; font-size:14px; }
+  .fault b { color:var(--red); text-transform:capitalize; }
+  .clean { background:#16231d; border:1px solid #244; border-left:4px solid var(--grn); border-radius:9px; padding:11px 13px; font-size:14px; color:var(--grn); }
+  footer { color:var(--mut); font-size:12px; margin-top:22px; border-top:1px solid var(--line); padding-top:12px; }
+</style>
+</head>
+<body>
+  <h1>Swing Check</h1>
+  <div class="sub">Record a swing → get the key positions + what's wrong. Runs entirely on your phone.</div>
+
+  <div class="banner">
+    <b>Prototype.</b> Film <b>face-on</b>, full body in frame, steady camera, trimmed to just the swing.
+    Positions are auto-detected and <b>approximate</b> — drag a slider to fix any that look off.
+  </div>
+
+  <label class="pick">
+    🎥 Record or choose a swing video
+    <input type="file" id="file" accept="video/*" capture="environment" />
+  </label>
+
+  <div id="status" class="status">loading…</div>
+
+  <div id="app" hidden>
+    <canvas id="view"></canvas>
+    <div id="caption" class="caption"></div>
+    <div class="tabs">
+      <button id="tabAddress" class="on">Address</button>
+      <button id="tabTop">Top</button>
+      <button id="tabImpact">Impact</button>
+    </div>
+    <div class="slider"><label>Address frame</label><input type="range" id="slAddress" min="0" max="1" value="0" /></div>
+    <div class="slider"><label>Top frame</label><input type="range" id="slTop" min="0" max="1" value="0" /></div>
+    <div class="slider"><label>Impact frame</label><input type="range" id="slImpact" min="0" max="1" value="0" /></div>
+    <div id="faults"></div>
+  </div>
+
+  <footer>
+    Pose by MediaPipe (on-device). Faults computed from 2D geometry — the same logic as
+    <code>swing/biomechanics.py</code>, verified identical. The accurate event detector is the
+    trained model in this repo; wiring it in is the documented next step (see <code>app/README.md</code>).
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
