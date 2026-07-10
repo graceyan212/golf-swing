@@ -134,6 +134,16 @@ python3 -m swing.analyze --video my_swing.mp4 --ckpt models/swingnet_ours.pth.ta
 
 ---
 
+## Apps built on top (prototypes)
+Two front-ends that turn the analysis into something usable on a phone. Both use the verified
+fault logic; both currently use a pose heuristic for the events (plugging in the trained model
+is documented in each).
+- **[`app/`](app/)** — a **web app** (MediaPipe pose in the browser). Opens on any phone via a
+  URL, no install; the fault math is unit-checked identical to the Python.
+- **[`ios/`](ios/)** — a **native iOS app** (SwiftUI + Apple Vision). Builds and runs (Xcode 26 /
+  iOS 26); the full pipeline is verified on real clips. Analysis needs a physical iPhone — Apple's
+  Simulator can't run body pose. See [`ios/README.md`](ios/README.md).
+
 ## What I reused vs. what I built
 
 Being explicit, because it matters for grading. Reusing a public dataset + architecture
