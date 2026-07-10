@@ -11,34 +11,33 @@ final class Analyzer: ObservableObject {
     @Published var selected: SwingEvent = .address
     @Published var faults: [Fault] = []
     @Published var trackedCount = 0
-    @Published var eventImages: [SwingEvent: UIImage] = [:]
-
-    private var url: URL?
+    @Published var frameThumbs: [UIImage?] = []   // one cached image per frame — instant scrub
+    @Published var playhead: Int = 0              // frame currently being viewed/scrubbed
 
     func analyze(url: URL) {
-        self.url = url
-        busy = true; progress = 0; frames = []; faults = []; eventImages = [:]
+        busy = true; progress = 0; frames = []; frameThumbs = []; faults = []
         status = "Analyzing swing…"
         Task {
             do {
-                let fs = try await PoseExtractor.extract(url: url) { p in
+                let ex = try await PoseExtractor.extract(url: url) { p in
                     Task { @MainActor in self.progress = p }
                 }
-                let ev = PoseExtractor.pickEvents(fs)
-                self.frames = fs
-                self.trackedCount = fs.filter { $0.ok }.count
+                let ev = PoseExtractor.pickEvents(ex.frames)
+                self.frames = ex.frames
+                self.frameThumbs = ex.thumbs
+                self.trackedCount = ex.frames.filter { $0.ok }.count
                 guard let ev else {
                     self.busy = false
                     self.status = "Couldn't track your body — film face-on, full body in frame, good light, trimmed to the swing."
-                    if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: fs.count) }
+                    if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: ex.frames.count) }
                     return
                 }
                 self.events = ev
+                self.playhead = ev[.address] ?? 0
                 self.recompute()
-                await self.renderEventImages()
                 self.busy = false
-                self.status = "Done — \(self.trackedCount)/\(fs.count) frames tracked. Auto-detected positions are approximate; drag a slider to fix any."
-                if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: fs.count) }
+                self.status = "Done — \(self.trackedCount)/\(ex.frames.count) frames tracked. Scrub to a frame, then set it as Address, Top or Impact."
+                if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: ex.frames.count) }
             } catch {
                 self.busy = false
                 self.status = "Error: \(error.localizedDescription)"
@@ -47,8 +46,8 @@ final class Analyzer: ObservableObject {
     }
 
     func reset() {
-        frames = []; events = [:]; faults = []; eventImages = [:]
-        selected = .address; trackedCount = 0; progress = 0; busy = false
+        frames = []; events = [:]; faults = []; frameThumbs = []
+        selected = .address; playhead = 0; trackedCount = 0; progress = 0; busy = false
         status = "Pick or record a face-on swing video to analyze."
     }
 
@@ -60,10 +59,9 @@ final class Analyzer: ObservableObject {
         faults = Biomechanics.analyze(address: pose(.address), top: pose(.top), impact: pose(.impact))
     }
 
-    func setEvent(_ e: SwingEvent, index: Int) {
-        events[e] = index
+    func assign(_ e: SwingEvent, frame: Int) {
+        events[e] = frame
         recompute()
-        Task { await renderOne(e) }
     }
 
     /// Verification hook: on `-autodemo`, dump the computed result to the app's
@@ -97,21 +95,12 @@ final class Analyzer: ObservableObject {
                   note: "spine straightens 11° from address to impact (>8.0) — early extension / standing up through the shot"),
         ]
         status = "Design preview"
+        playhead = 3
         if let u = Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") {
-            for (e, idx) in events {
-                if let img = PoseExtractor.frameImage(url: u, time: Double(idx) / Double(n) * 4.6) { eventImages[e] = img }
+            Task.detached {
+                let thumbs = (0..<n).map { PoseExtractor.frameImage(url: u, time: Double($0) / Double(n) * 4.6) }
+                await MainActor.run { self.frameThumbs = thumbs }
             }
         }
-    }
-
-    func renderEventImages() async {
-        for e in SwingEvent.allCases { await renderOne(e) }
-    }
-
-    func renderOne(_ e: SwingEvent) async {
-        guard let url, let i = events[e], i >= 0, i < frames.count else { return }
-        let t = frames[i].time
-        let img = await Task.detached { PoseExtractor.frameImage(url: url, time: t) }.value
-        if let img { eventImages[e] = img }
     }
 }

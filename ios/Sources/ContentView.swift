@@ -122,8 +122,7 @@ struct ContentView: View {
     private var results: some View {
         VStack(alignment: .leading, spacing: 18) {
             verdictHero
-            videoCard
-            positionControl
+            scrubCard
             diagnosis
             Button { analyzer.reset() } label: { Label("Analyze another swing", systemImage: "arrow.counterclockwise") }
                 .buttonStyle(GhostButton())
@@ -158,62 +157,60 @@ struct ContentView: View {
         }.card()
     }
 
-    private var currentFrame: FrameSample? {
-        guard let i = analyzer.events[analyzer.selected], i < analyzer.frames.count else { return nil }
-        return analyzer.frames[i]
+    // MARK: scrub card (Photos-style frame-by-frame)
+    private var currentThumb: UIImage? {
+        let p = analyzer.playhead
+        return p >= 0 && p < analyzer.frameThumbs.count ? analyzer.frameThumbs[p] : nil
+    }
+    private var currentPlayFrame: FrameSample? {
+        let p = analyzer.playhead
+        return p >= 0 && p < analyzer.frames.count ? analyzer.frames[p] : nil
+    }
+    private var currentAssignment: String? {
+        let hits = SwingEvent.allCases.filter { analyzer.events[$0] == analyzer.playhead }
+        return hits.isEmpty ? nil : hits.map { $0.rawValue }.joined(separator: " · ")
     }
 
-    private var videoCard: some View {
+    private var scrubCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topLeading) {
-                SwingCanvas(image: analyzer.eventImages[analyzer.selected], frame: currentFrame)
+                SwingCanvas(image: currentThumb, frame: currentPlayFrame)
                 HStack(spacing: 6) {
                     Circle().fill(Palette.fairway).frame(width: 6, height: 6)
                     Text("POSE").font(.system(size: 10, weight: .bold)).tracking(1.2).foregroundStyle(Palette.chalk)
                 }
                 .padding(.horizontal, 9).padding(.vertical, 5)
-                .background(.ultraThinMaterial, in: Capsule())
-                .padding(10)
+                .background(.ultraThinMaterial, in: Capsule()).padding(10)
             }
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Text(captionForSelected).font(.system(size: 13)).foregroundStyle(Palette.mist)
+
+            HStack {
+                Eyebrow("Frame \(analyzer.playhead + 1) / \(max(1, analyzer.frames.count))")
+                Spacer()
+                if let a = currentAssignment { Eyebrow(a, color: Palette.fairway) }
+            }
+
+            Filmstrip(thumbs: analyzer.frameThumbs, total: analyzer.frames.count,
+                      playhead: $analyzer.playhead, events: analyzer.events)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Eyebrow("Set this frame as")
+                HStack(spacing: 8) { ForEach(SwingEvent.allCases) { setButton($0) } }
+            }
         }.card(10)
     }
 
-    private var captionForSelected: String {
-        let e = analyzer.selected
-        if let f = currentFrame, !f.ok { return "\(e.rawValue) — no body detected here; drag to a frame where you're in view." }
-        return "\(e.rawValue) position"
-    }
-
-    private var positionControl: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Eyebrow("Key positions")
-            HStack(spacing: 8) {
-                ForEach(SwingEvent.allCases) { e in
-                    let on = analyzer.selected == e
-                    Button { analyzer.selected = e } label: {
-                        Text(e.rawValue).font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(on ? Palette.turf : Palette.chalk)
-                            .frame(maxWidth: .infinity).padding(.vertical, 9)
-                            .background(on ? Palette.fairway : Palette.surface2)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }.buttonStyle(.plain)
-                }
-            }
-            TempoTrack(total: analyzer.frames.count, events: analyzer.events, selected: $analyzer.selected)
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Eyebrow("\(analyzer.selected.rawValue) · frame \((analyzer.events[analyzer.selected] ?? 0) + 1)/\(analyzer.frames.count)")
-                    Spacer()
-                    Text("drag to fine-tune").font(.system(size: 11)).foregroundStyle(Palette.mist)
-                }
-                Slider(value: Binding(
-                    get: { Double(analyzer.events[analyzer.selected] ?? 0) },
-                    set: { analyzer.setEvent(analyzer.selected, index: Int($0.rounded())) }),
-                    in: 0...Double(max(1, analyzer.frames.count - 1)), step: 1)
-            }
-        }.card()
+    private func setButton(_ e: SwingEvent) -> some View {
+        let here = analyzer.events[e] == analyzer.playhead
+        return Button { analyzer.assign(e, frame: analyzer.playhead) } label: {
+            Text(e.rawValue).font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(here ? Palette.turf : Palette.chalk)
+                .frame(maxWidth: .infinity).padding(.vertical, 10)
+                .background(here ? Palette.fairway : Palette.surface2)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(here ? Color.clear : Palette.line, lineWidth: 1))
+        }.buttonStyle(.plain)
     }
 
     private var diagnosis: some View {
@@ -257,7 +254,6 @@ struct SwingCanvas: View {
                 ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Palette.surface2))
             }
             guard let f = frame, f.ok, !f.draw.isEmpty else { return }
-            // faint center reference line through mid-hip ("stay centered")
             if let lh = f.draw["lhip"], let rh = f.draw["rhip"] {
                 let cx = (lh.x + rh.x) / 2 * size.width
                 var c = Path(); c.move(to: CGPoint(x: cx, y: 0)); c.addLine(to: CGPoint(x: cx, y: size.height))
@@ -281,35 +277,52 @@ struct SwingCanvas: View {
     }
 }
 
-// MARK: - Signature: swing-tempo timeline
-struct TempoTrack: View {
+// MARK: - Signature: filmstrip scrubber (Photos-style frame-by-frame)
+struct Filmstrip: View {
+    let thumbs: [UIImage?]
     let total: Int
+    @Binding var playhead: Int
     let events: [SwingEvent: Int]
-    @Binding var selected: SwingEvent
+
+    private func frac(_ i: Int) -> CGFloat { total > 1 ? CGFloat(i) / CGFloat(total - 1) : 0 }
+    private func tint(_ e: SwingEvent) -> Color {
+        switch e { case .address: return Palette.chalk; case .top: return Palette.fairway; case .impact: return Palette.amber }
+    }
     var body: some View {
         GeometryReader { geo in
-            let w = geo.size.width, midY = geo.size.height / 2
-            ZStack {
-                Capsule().fill(Palette.surface2).frame(height: 4).padding(.horizontal, 12)
-                ForEach(SwingEvent.allCases) { e in
-                    let idx = events[e] ?? 0
-                    let frac = total > 1 ? CGFloat(idx) / CGFloat(total - 1) : 0
-                    let x = 12 + frac * (w - 24)
-                    let on = selected == e
-                    Circle()
-                        .fill(on ? Palette.fairway : Palette.surface2)
-                        .overlay(Circle().stroke(on ? Palette.fairway : Palette.line, lineWidth: 1.5))
-                        .frame(width: on ? 16 : 12, height: on ? 16 : 12)
-                        .overlay(Text(String(e.rawValue.prefix(1)))
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(on ? Palette.fairway : Palette.mist)
-                            .offset(y: -19))
-                        .position(x: x, y: midY)
-                        .onTapGesture { selected = e }
+            let w = geo.size.width, h = geo.size.height
+            let n = min(14, max(1, thumbs.count))
+            ZStack(alignment: .topLeading) {
+                HStack(spacing: 1) {
+                    ForEach(Array(0..<n), id: \.self) { k in
+                        let idx = thumbs.count > 1 ? Int((Double(k) / Double(max(1, n - 1))) * Double(thumbs.count - 1)) : 0
+                        Group {
+                            if idx < thumbs.count, let img = thumbs[idx] {
+                                Image(uiImage: img).resizable().scaledToFill()
+                            } else { Palette.surface2 }
+                        }
+                        .frame(width: (w - CGFloat(n - 1)) / CGFloat(n), height: h).clipped()
+                    }
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Palette.line, lineWidth: 1))
+
+                ForEach(SwingEvent.allCases) { e in
+                    if let i = events[e] {
+                        tint(e).frame(width: 2.5, height: h).offset(x: frac(i) * (w - 2.5))
+                    }
+                }
+                RoundedRectangle(cornerRadius: 2).fill(Palette.chalk)
+                    .frame(width: 3, height: h + 10).offset(x: frac(playhead) * (w - 3), y: -5)
+                    .shadow(color: .black.opacity(0.5), radius: 2)
             }
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0).onChanged { v in
+                let f = min(max(0, v.location.x / w), 1)
+                playhead = Int((f * Double(max(1, total - 1))).rounded())
+            })
         }
-        .frame(height: 44)
+        .frame(height: 56)
     }
 }
 

@@ -10,7 +10,11 @@ enum PoseExtractor {
     static let nSamples = 36
     static let minConfidence: Float = 0.3
 
-    static func extract(url: URL, progress: @escaping (Double) -> Void) async throws -> [FrameSample] {
+    /// Frames + a cached display thumbnail per frame (so scrubbing is instant —
+    /// no re-decoding the video from disk on every drag).
+    struct Extraction { let frames: [FrameSample]; let thumbs: [UIImage?] }
+
+    static func extract(url: URL, progress: @escaping (Double) -> Void) async throws -> Extraction {
         let asset = AVURLAsset(url: url)
         let duration = try await asset.load(.duration)
         let dur = CMTimeGetSeconds(duration)
@@ -24,17 +28,33 @@ enum PoseExtractor {
         gen.requestedTimeToleranceAfter = .zero
 
         var samples: [FrameSample] = []
+        var thumbs: [UIImage?] = []
         for i in 0..<nSamples {
             let t = min(dur * (Double(i) + 0.5) / Double(nSamples), max(0, dur - 0.01))
             let time = CMTime(seconds: t, preferredTimescale: 600)
             if let cg = try? gen.copyCGImage(at: time, actualTime: nil) {
                 samples.append(detect(upscale(cg, minSide: 512), index: i, time: t))
+                thumbs.append(UIImage(cgImage: downscale(cg, maxSide: 480)))
             } else {
                 samples.append(FrameSample(index: i, time: t, ok: false, pose: nil, wristHigherY: nil, draw: [:]))
+                thumbs.append(nil)
             }
             progress(Double(i + 1) / Double(nSamples))
         }
-        return samples
+        return Extraction(frames: samples, thumbs: thumbs)
+    }
+
+    private static func downscale(_ img: CGImage, maxSide: CGFloat) -> CGImage {
+        let w = CGFloat(img.width), h = CGFloat(img.height)
+        let s = min(1.0, maxSide / max(w, h))
+        if s >= 1.0 { return img }
+        let nw = Int(w * s), nh = Int(h * s)
+        guard let ctx = CGContext(data: nil, width: nw, height: nh, bitsPerComponent: 8,
+                                  bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return img }
+        ctx.interpolationQuality = .medium
+        ctx.draw(img, in: CGRect(x: 0, y: 0, width: nw, height: nh))
+        return ctx.makeImage() ?? img
     }
 
     /// A single frame image for display (unscaled, oriented).
