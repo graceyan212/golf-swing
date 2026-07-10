@@ -10,6 +10,7 @@
 		056BF007517D75159A985260 /* CameraRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 316E6D5DC29F2D5BB4C35AF8 /* CameraRecorder.swift */; };
 		22D8C24063D22AED7D410D00 /* demo_swing.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6B8050982BE2A56733AB1B0E /* demo_swing.mp4 */; };
 		64E73BD865A92B068E64767A /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34503C20BC7C25D601F1C97 /* Analyzer.swift */; };
+		6D76D520CE4A1CC977C78E52 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA12AA7690E8A99AE0A3022 /* Theme.swift */; };
 		87C1DC37F80F206B57DC3A00 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6D90D16410C132D579BE0A /* ContentView.swift */; };
 		8C9773C794ECAF4AB8EFCCCC /* Biomechanics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */; };
 		DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B283D2906D0DCD962321D /* Models.swift */; };
@@ -23,6 +24,7 @@
 		5D7B283D2906D0DCD962321D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		6B8050982BE2A56733AB1B0E /* demo_swing.mp4 */ = {isa = PBXFileReference; path = demo_swing.mp4; sourceTree = "<group>"; };
 		A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Biomechanics.swift; sourceTree = "<group>"; };
+		CEA12AA7690E8A99AE0A3022 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		CFFD52DD1A33916E58AE013F /* SwingCheck.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SwingCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D34503C20BC7C25D601F1C97 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
 		E219413FA4175502E9EC3197 /* PoseExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseExtractor.swift; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 				5D7B283D2906D0DCD962321D /* Models.swift */,
 				E219413FA4175502E9EC3197 /* PoseExtractor.swift */,
 				1F39AFA1C1C94B64A1A194FB /* SwingCheckApp.swift */,
+				CEA12AA7690E8A99AE0A3022 /* Theme.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 				DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */,
 				EE966199A8971ECB97DEA35B /* PoseExtractor.swift in Sources */,
 				F324444A8107CFA92EAE4B64 /* SwingCheckApp.swift in Sources */,
+				6D76D520CE4A1CC977C78E52 /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

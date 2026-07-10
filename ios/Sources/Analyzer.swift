@@ -46,6 +46,12 @@ final class Analyzer: ObservableObject {
         }
     }
 
+    func reset() {
+        frames = []; events = [:]; faults = []; eventImages = [:]
+        selected = .address; trackedCount = 0; progress = 0; busy = false
+        status = "Pick or record a face-on swing video to analyze."
+    }
+
     func recompute() {
         func pose(_ e: SwingEvent) -> Pose? {
             guard let i = events[e], i >= 0, i < frames.count, frames[i].ok else { return nil }
@@ -74,6 +80,27 @@ final class Analyzer: ObservableObject {
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             try? lines.joined(separator: "\n").write(to: dir.appendingPathComponent("autodemo_result.txt"),
                                                       atomically: true, encoding: .utf8)
+        }
+    }
+
+    // Design-preview only (launch arg -uidemo): populate a realistic result so the
+    // redesigned UI can be reviewed where on-device Vision isn't available (Simulator).
+    func loadUIDemo() {
+        let n = 48
+        frames = (0..<n).map { FrameSample(index: $0, time: Double($0) / Double(n) * 4.6, ok: true, pose: nil, wristHigherY: nil, draw: [:]) }
+        events = [.address: 3, .top: 24, .impact: 33]
+        trackedCount = n
+        faults = [
+            Fault(name: "sway off ball", value: 0.52, threshold: 0.4,
+                  note: "head slides +0.52 shoulder-widths on the backswing (steady is within ±0.4) — you're swaying off the ball instead of turning"),
+            Fault(name: "early extension", value: 11, threshold: 8,
+                  note: "spine straightens 11° from address to impact (>8.0) — early extension / standing up through the shot"),
+        ]
+        status = "Design preview"
+        if let u = Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") {
+            for (e, idx) in events {
+                if let img = PoseExtractor.frameImage(url: u, time: Double(idx) / Double(n) * 4.6) { eventImages[e] = img }
+            }
         }
     }
 
