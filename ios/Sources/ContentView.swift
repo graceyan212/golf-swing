@@ -92,11 +92,19 @@ struct ContentView: View {
 
     private var actionButtons: some View {
         VStack(spacing: 10) {
-            Button { showCamera = true } label: {
+            Button {
+                if cameraAvailable { showCamera = true }
+            } label: {
                 Label("Record a swing", systemImage: "video.fill")
             }
             .buttonStyle(FairwayButton())
-            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+            .disabled(!cameraAvailable)
+
+            if !cameraAvailable {
+                Text("Recording needs a real device — in the Simulator, use “Choose from library” or the demo clip.")
+                    .font(.system(size: 12)).foregroundStyle(Palette.mist)
+                    .multilineTextAlignment(.center).frame(maxWidth: .infinity)
+            }
 
             PhotosPicker(selection: $pickerItem, matching: .videos) {
                 Label("Choose from library", systemImage: "photo.on.rectangle.angled")

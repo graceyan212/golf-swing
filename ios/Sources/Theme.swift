@@ -61,22 +61,33 @@ extension View {
     func card(_ pad: CGFloat = 18) -> some View { modifier(CardBG(pad: pad)) }
 }
 
-// Filled fairway primary action.
+// Filled fairway primary action (dims clearly when disabled).
 struct FairwayButton: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+    func makeBody(configuration: Configuration) -> some View { FairwayButtonBody(configuration: configuration) }
+}
+private struct FairwayButtonBody: View {
+    let configuration: ButtonStyleConfiguration
+    @Environment(\.isEnabled) private var enabled
+    var body: some View {
         configuration.label
             .font(.system(size: 17, weight: .bold))
             .foregroundStyle(Palette.turf)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(Palette.fairway.opacity(configuration.isPressed ? 0.82 : 1))
+            .background(Palette.fairway.opacity(!enabled ? 0.4 : (configuration.isPressed ? 0.82 : 1)))
             .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .opacity(enabled ? 1 : 0.7)
     }
 }
 
 // Quiet outlined secondary action.
 struct GhostButton: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+    func makeBody(configuration: Configuration) -> some View { GhostButtonBody(configuration: configuration) }
+}
+private struct GhostButtonBody: View {
+    let configuration: ButtonStyleConfiguration
+    @Environment(\.isEnabled) private var enabled
+    var body: some View {
         configuration.label
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(Palette.chalk)
@@ -85,5 +96,6 @@ struct GhostButton: ButtonStyle {
             .background(Palette.surface2.opacity(configuration.isPressed ? 0.6 : 1))
             .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).stroke(Palette.line, lineWidth: 1))
+            .opacity(enabled ? 1 : 0.6)
     }
 }
