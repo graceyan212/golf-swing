@@ -112,59 +112,25 @@ struct PlaneCanvas: View {
     }
 }
 
-struct DownTheLineSection: View {
-    @StateObject private var an = PlaneAnalyzer()
-    @State private var pick: PhotosPickerItem?
-    @State private var showCam = false
-    private var hasResult: Bool { !an.dets.isEmpty && an.playhead < an.dets.count }
-
+/// Side (down-the-line) results, driven by a PlaneAnalyzer the parent owns.
+struct PlaneResultsView: View {
+    @ObservedObject var an: PlaneAnalyzer
+    private var tracked: Bool { an.planeLine != nil }
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if an.busy {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Looking at your swing…").font(.display(22)).foregroundStyle(Palette.chalk)
-                    ProgressView(value: an.progress).tint(Palette.fairway)
-                }.card()
-            }
-            if hasResult { results } else if !an.busy { intro }
-        }
-        .onChange(of: pick) { _, it in load(it) }
-        .fullScreenCover(isPresented: $showCam) { CameraRecorder { url in an.analyze(url: url) }.ignoresSafeArea() }
-        .onAppear { if CommandLine.arguments.contains("-dtldemo") && an.dets.isEmpty && !an.busy { runDemo() } }
-    }
-
-    private var intro: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Check your swing path").font(.display(34)).foregroundStyle(Palette.chalk)
-            Text("Film your swing from behind you, looking where the ball goes. We'll follow your club and show your path.")
-                .font(.system(size: 19)).foregroundStyle(Palette.mist).lineSpacing(3)
-            VStack(spacing: 12) {
-                Button { if cameraAvailable { showCam = true } } label: { Label("Record my swing", systemImage: "video.fill").frame(maxWidth: .infinity) }
-                    .buttonStyle(FairwayButton()).disabled(!cameraAvailable)
-                if !cameraAvailable {
-                    Text("To record, open this on your iPhone. For now, pick a saved video or see an example.")
-                        .font(.system(size: 14)).foregroundStyle(Palette.mist).multilineTextAlignment(.center).frame(maxWidth: .infinity)
-                }
-                PhotosPicker(selection: $pick, matching: .videos) { Label("Pick a saved video", systemImage: "photo.on.rectangle.angled").frame(maxWidth: .infinity) }
-                    .buttonStyle(GhostButton())
-                if Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") != nil {
-                    Button { runDemo() } label: { Label("See an example", systemImage: "play.circle").frame(maxWidth: .infinity) }.buttonStyle(GhostButton())
-                }
-            }
-        }
-    }
-
-    private var results: some View {
-        let color = an.overTop ? Palette.flag : Palette.fairway
-        return VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 14) {
-                Image(systemName: an.overTop ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .font(.system(size: 30)).foregroundStyle(color)
+                Image(systemName: !tracked ? "questionmark.circle.fill"
+                                  : (an.overTop ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"))
+                    .font(.system(size: 30))
+                    .foregroundStyle(!tracked ? Palette.amber : (an.overTop ? Palette.flag : Palette.fairway))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(an.verdict ?? "—").font(.display(26)).foregroundStyle(Palette.chalk)
-                    Text(an.overTop ? "Your club swings out and over on the way down."
-                                    : "Your club stays on a nice path down to the ball.")
-                        .font(.system(size: 16)).foregroundStyle(Palette.mist).fixedSize(horizontal: false, vertical: true)
+                    Text(an.verdict ?? "—").font(.display(tracked ? 26 : 20)).foregroundStyle(Palette.chalk)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if tracked {
+                        Text(an.overTop ? "Your club swings out and over on the way down."
+                                        : "Your club stays on a nice path down to the ball.")
+                            .font(.system(size: 16)).foregroundStyle(Palette.mist).fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }.card()
 
@@ -176,19 +142,6 @@ struct DownTheLineSection: View {
                 Text("Slide to watch your swing").font(.system(size: 16)).foregroundStyle(Palette.mist)
                 Filmstrip(thumbs: an.thumbs, total: an.dets.count, playhead: $an.playhead, events: [:])
             }.card(10)
-            Button { an.reset() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise").frame(maxWidth: .infinity) }
-                .buttonStyle(GhostButton())
         }
-    }
-
-    private func load(_ item: PhotosPickerItem?) {
-        guard let item else { return }
-        Task {
-            if let movie = try? await item.loadTransferable(type: Movie.self) { an.analyze(url: movie.url) }
-            else { an.status = "Couldn't load that video." }
-        }
-    }
-    private func runDemo() {
-        if let u = Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") { an.analyze(url: u) }
     }
 }

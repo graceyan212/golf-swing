@@ -19,10 +19,15 @@ struct Movie: Transferable {
 }
 
 struct ContentView: View {
+    enum Shot { case front, side }
+
     @StateObject private var analyzer = Analyzer()
+    @StateObject private var plane = PlaneAnalyzer()
     @State private var pickerItem: PhotosPickerItem?
     @State private var showCamera = false
-    @State private var mode = 0   // 0 = face-on faults, 1 = down-the-line plane
+    @State private var videoURL: URL?      // the video the user added
+    @State private var shot: Shot?         // front/side, auto-detected after the video is added
+    @State private var detecting = false   // running the front/side auto-detect
 
     static let bones: [(String, String)] = [
         ("lsh", "rsh"), ("lsh", "lhip"), ("rsh", "rhip"), ("lhip", "rhip"),
@@ -30,7 +35,8 @@ struct ContentView: View {
         ("lhip", "lkn"), ("lkn", "lan"), ("rhip", "rkn"), ("rkn", "ran"),
         ("nose", "lsh"), ("nose", "rsh")]
 
-    private var hasResult: Bool { !analyzer.frames.isEmpty && !analyzer.events.isEmpty }
+    private var hasFrontResult: Bool { !analyzer.frames.isEmpty && !analyzer.events.isEmpty }
+    private var hasSideResult: Bool { !plane.dets.isEmpty && plane.playhead < plane.dets.count }
 
     var body: some View {
         ZStack {
@@ -38,16 +44,19 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
-                    Picker("Mode", selection: $mode) {
-                        Text("Front view").tag(0)
-                        Text("Side view").tag(1)
-                    }
-                    .pickerStyle(.segmented)
-                    if mode == 1 {
-                        DownTheLineSection()
+                    if detecting {
+                        busyCard(nil)
                     } else {
-                        if analyzer.busy { analyzingCard }
-                        if hasResult { results } else if !analyzer.busy { emptyState }
+                        switch shot {
+                        case .front:
+                            if analyzer.busy { busyCard(analyzer.progress) }
+                            else if hasFrontResult { frontResults } else { landing }
+                        case .side:
+                            if plane.busy { busyCard(plane.progress) }
+                            else if hasSideResult { sideResults } else { landing }
+                        case nil:
+                            landing
+                        }
                     }
                 }
                 .padding(20)
@@ -57,14 +66,17 @@ struct ContentView: View {
         .tint(Palette.fairway)
         .onChange(of: pickerItem) { _, item in loadPicked(item) }
         .fullScreenCover(isPresented: $showCamera) {
-            CameraRecorder { url in analyzer.analyze(url: url) }.ignoresSafeArea()
+            CameraRecorder { url in addVideo(url) }.ignoresSafeArea()
         }
         .onAppear {
-            if CommandLine.arguments.contains("-uidemo") { analyzer.loadUIDemo() }
-            else if CommandLine.arguments.contains("-autodemo") { runDemo() }
-            if CommandLine.arguments.contains("-dtldemo") { mode = 1 }
+            if CommandLine.arguments.contains("-uidemo") { analyzer.loadUIDemo(); shot = .front }
+            else if CommandLine.arguments.contains("-autodemo"), let u = demoURL { videoURL = u; shot = .front; analyzer.analyze(url: u) }
+            else if CommandLine.arguments.contains("-dtldemo"), let u = demoURL { videoURL = u; shot = .side; plane.analyze(url: u) }
+            else if CommandLine.arguments.contains("-detectdemo"), let u = demoURL { addVideo(u) }
         }
     }
+
+    private var demoURL: URL? { Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") }
 
     // MARK: header
     private var header: some View {
@@ -72,20 +84,18 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: empty state
-    private var emptyState: some View {
+    // MARK: landing — one place to add a video
+    private var landing: some View {
         VStack(alignment: .leading, spacing: 22) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Check your swing").font(.display(40)).foregroundStyle(Palette.chalk)
-                Text("Take a video of your golf swing. We'll show you what to fix, in plain words.")
+                Text("Add a video of your golf swing. We'll show you what to fix, in plain words.")
                     .font(.system(size: 19)).foregroundStyle(Palette.mist).lineSpacing(3)
             }
             actionButtons
             HStack(spacing: 12) {
                 Image(systemName: "lightbulb.fill").font(.system(size: 18)).foregroundStyle(Palette.amber)
-                Text(mode == 1
-                     ? "Stand behind yourself, camera down the target line, whole body in view."
-                     : "Face the camera, stand back so your whole body shows, and hold the phone still.")
+                Text("Stand back so your whole body shows, and hold the phone still. Front or side — we'll figure out which.")
                     .font(.system(size: 17)).foregroundStyle(Palette.chalk).lineSpacing(2)
             }.card()
         }
@@ -112,29 +122,54 @@ struct ContentView: View {
             }
             .buttonStyle(GhostButton())
 
-            if Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") != nil {
-                Button { runDemo() } label: { Label("See an example", systemImage: "play.circle") }
+            if demoURL != nil {
+                Button { if let u = demoURL { addVideo(u) } } label: { Label("See an example", systemImage: "play.circle") }
                     .buttonStyle(GhostButton())
             }
         }
     }
 
-    private var analyzingCard: some View {
+    // Shown while detecting front/side (progress == nil) or analyzing (progress set).
+    private func busyCard(_ progress: Double?) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Looking at your swing…").font(.display(22)).foregroundStyle(Palette.chalk)
-            ProgressView(value: analyzer.progress).tint(Palette.fairway)
+            Text(progress == nil ? "Getting your video ready…" : "Looking at your swing…")
+                .font(.display(22)).foregroundStyle(Palette.chalk)
+            if let p = progress { ProgressView(value: p).tint(Palette.fairway) }
+            else { ProgressView().tint(Palette.fairway) }
         }.card()
     }
 
-    // MARK: results
-    private var results: some View {
+    // MARK: results — front (face-on) view
+    private var frontResults: some View {
         VStack(alignment: .leading, spacing: 18) {
             verdictHero
             swingCard
             diagnosis
-            Button { analyzer.reset() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise") }
+            correctionLink(current: "front")
+            Button { resetAll() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise") }
                 .buttonStyle(GhostButton())
         }
+    }
+
+    // MARK: results — side (down-the-line) view
+    private var sideResults: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            PlaneResultsView(an: plane)
+            correctionLink(current: "side")
+            Button { resetAll() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise") }
+                .buttonStyle(GhostButton())
+        }
+    }
+
+    // "We guessed this was a front/side video — wrong? switch" — one tap to re-read the same video.
+    private func correctionLink(current: String) -> some View {
+        HStack(spacing: 4) {
+            Text(current == "front" ? "Filmed from the side instead?" : "Filmed from the front instead?")
+                .font(.system(size: 15)).foregroundStyle(Palette.mist)
+            Button { switchShot() } label: {
+                Text("Switch").font(.system(size: 15, weight: .semibold)).foregroundStyle(Palette.fairway)
+            }
+        }.frame(maxWidth: .infinity)
     }
 
     private var faultColor: Color { analyzer.faults.isEmpty ? Palette.fairway : Palette.flag }
@@ -201,12 +236,41 @@ struct ContentView: View {
     private func loadPicked(_ item: PhotosPickerItem?) {
         guard let item else { return }
         Task {
-            if let movie = try? await item.loadTransferable(type: Movie.self) { analyzer.analyze(url: movie.url) }
-            else { analyzer.status = "Couldn't load that video." }
+            if let movie = try? await item.loadTransferable(type: Movie.self) { addVideo(movie.url) }
         }
     }
-    private func runDemo() {
-        if let u = Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") { analyzer.analyze(url: u) }
+
+    /// The single entry point for any added video — auto-detect front vs side, then analyze.
+    private func addVideo(_ url: URL) {
+        videoURL = url
+        shot = nil
+        analyzer.reset(); plane.reset()
+        detecting = true
+        Task {
+            let side = await OrientationDetector.looksLikeSide(url: url)
+            await MainActor.run {
+                detecting = false
+                route(side ? .side : .front, url: url)
+            }
+        }
+    }
+
+    private func route(_ s: Shot, url: URL) {
+        shot = s
+        if s == .front { analyzer.analyze(url: url) } else { plane.analyze(url: url) }
+    }
+
+    /// Correction: re-read the same video as the other view.
+    private func switchShot() {
+        guard let u = videoURL, let s = shot else { return }
+        let other: Shot = (s == .front) ? .side : .front
+        if other == .front { plane.reset() } else { analyzer.reset() }
+        route(other, url: u)
+    }
+
+    private func resetAll() {
+        videoURL = nil; shot = nil; detecting = false; pickerItem = nil
+        analyzer.reset(); plane.reset()
     }
 }
 

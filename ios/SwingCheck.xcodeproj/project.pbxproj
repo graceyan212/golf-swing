@@ -15,6 +15,7 @@
 		87C1DC37F80F206B57DC3A00 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6D90D16410C132D579BE0A /* ContentView.swift */; };
 		8C9773C794ECAF4AB8EFCCCC /* Biomechanics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */; };
 		B487B614D31DE31A8D52332D /* ClubTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252782ED3AA83F607869260B /* ClubTracker.swift */; };
+		C1C2CD828711CC3E7872EF0B /* OrientationDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11AA5DF9772D7126F209AEE /* OrientationDetector.swift */; };
 		DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B283D2906D0DCD962321D /* Models.swift */; };
 		DEF9756836F0BB6C94432C61 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A5A1CE4755B9D4D0E830FB8 /* Assets.xcassets */; };
 		EE966199A8971ECB97DEA35B /* PoseExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E219413FA4175502E9EC3197 /* PoseExtractor.swift */; };
@@ -31,6 +32,7 @@
 		6B8050982BE2A56733AB1B0E /* demo_swing.mp4 */ = {isa = PBXFileReference; path = demo_swing.mp4; sourceTree = "<group>"; };
 		8A5A1CE4755B9D4D0E830FB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Biomechanics.swift; sourceTree = "<group>"; };
+		C11AA5DF9772D7126F209AEE /* OrientationDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationDetector.swift; sourceTree = "<group>"; };
 		CEA12AA7690E8A99AE0A3022 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		CFFD52DD1A33916E58AE013F /* SwingCheck.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SwingCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D34503C20BC7C25D601F1C97 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
@@ -77,6 +79,7 @@
 				FA6D90D16410C132D579BE0A /* ContentView.swift */,
 				E37CDEF38CAD7FC03BD1A09A /* DownTheLine.swift */,
 				5D7B283D2906D0DCD962321D /* Models.swift */,
+				C11AA5DF9772D7126F209AEE /* OrientationDetector.swift */,
 				E219413FA4175502E9EC3197 /* PoseExtractor.swift */,
 				1F39AFA1C1C94B64A1A194FB /* SwingCheckApp.swift */,
 				CEA12AA7690E8A99AE0A3022 /* Theme.swift */,
@@ -163,6 +166,7 @@
 				87C1DC37F80F206B57DC3A00 /* ContentView.swift in Sources */,
 				FA9D900F5B7EBD300D6B0B21 /* DownTheLine.swift in Sources */,
 				DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */,
+				C1C2CD828711CC3E7872EF0B /* OrientationDetector.swift in Sources */,
 				EE966199A8971ECB97DEA35B /* PoseExtractor.swift in Sources */,
 				F324444A8107CFA92EAE4B64 /* SwingCheckApp.swift in Sources */,
 				6D76D520CE4A1CC977C78E52 /* Theme.swift in Sources */,
