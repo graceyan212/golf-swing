@@ -8,16 +8,19 @@ function dimples(cx,cy,R,dr,fill){
   for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6; pts.push([r2*Math.cos(a), r2*Math.sin(a)]);}
   return '<g fill="'+fill+'">'+pts.map(p=>`<circle cx="${(cx+p[0]).toFixed(2)}" cy="${(cy+p[1]).toFixed(2)}" r="${dr}"/>`).join('')+'</g>';
 }
-const cream='#EFE7D4', pine='#1F5138';
-// clear check: left arm down from upper-left, rounded valley, sweep up to ball
-const d = "M24 58 C 34 80, 46 90, 55 87 C 66 83, 74 56, 84 40";
-const ball=[90,28], br=16;
-const mark = `<path d="${d}" fill="none" stroke="${cream}" stroke-width="10" stroke-linecap="round"/>`
-           + `<circle cx="${ball[0]}" cy="${ball[1]}" r="${br}" fill="${cream}"/>`
-           + dimples(ball[0],ball[1],br,1.8,pine);
+const cream='#F0E9D8', pine='#1F5138', brass='#B4893C';
+// bounce-check: cap -> smooth hump -> rounded valley -> sweep up to ball (all cubic, continuous)
+const d = "M25 74 C 30 63, 38 65, 42 73 C 46 80, 49 83, 53 82 C 60 79, 66 60, 82 44";
+const ball=[89,31], br=14.5;
+// soft golf ball: brass base + cream disc offset down-right leaves a warm crescent top-left
+const ballSvg =
+   `<circle cx="${ball[0]}" cy="${ball[1]}" r="${br}" fill="${brass}"/>`
+ + `<circle cx="${ball[0]+2.2}" cy="${ball[1]+2.2}" r="${br}" fill="${cream}"/>`
+ + dimples(ball[0]+1,ball[1]+1,br,1.7,pine);
+const mark = `<path d="${d}" fill="none" stroke="${cream}" stroke-width="9.5" stroke-linecap="round"/>` + ballSvg;
 document.getElementById('root').innerHTML =
  `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
     <rect width="1024" height="1024" fill="${pine}"/>
-    <g transform="translate(150,205) scale(6.0)">${mark}</g>
+    <g transform="translate(158,214) scale(6.0)">${mark}</g>
   </svg>`;
 </script></body></html>
