@@ -1,8 +1,9 @@
 import SwiftUI
 
-// "Swing-lab" identity: twilight-turf base, chalk text, and a semantic 3-color
-// system (fairway = clean, amber = minor, flag = fault) where every color means
-// one thing. Measurements are set in monospaced digits like a launch-monitor readout.
+// "Fairway Heritage" identity: warm parchment, pine green, clay, brass — a premium,
+// high-contrast, country-club read for an older golfer. TWO fonts only, one rule:
+// a serif (New York) for headings & verdicts; a sans (SF Pro) for everything else,
+// with tabular figures for numbers. (Token names kept so every screen inherits this.)
 extension Color {
     init(hex: UInt) {
         self.init(.sRGB,
@@ -13,27 +14,29 @@ extension Color {
 }
 
 enum Palette {
-    static let turf     = Color(hex: 0x0C120E)   // background — twilight range, not pure black
-    static let surface  = Color(hex: 0x141C17)   // cards
-    static let surface2 = Color(hex: 0x1C261F)   // raised chips / tracks
-    static let line     = Color(hex: 0x27322B)   // hairlines
-    static let chalk    = Color(hex: 0xEDF3EE)   // primary text
-    static let mist     = Color(hex: 0x8CA396)   // secondary text
-    static let fairway  = Color(hex: 0x34C06B)   // GOOD / clean / primary action
-    static let amber    = Color(hex: 0xF2B84B)   // minor
-    static let flag     = Color(hex: 0xFF6B57)   // fault
+    static let turf     = Color(hex: 0xEFE7D4)   // background — parchment
+    static let surface  = Color(hex: 0xFAF5E9)   // cards
+    static let surface2 = Color(hex: 0xF1EAD9)   // raised chips / tracks
+    static let line     = Color(hex: 0xDCCFB0)   // hairlines
+    static let chalk    = Color(hex: 0x20261F)   // primary text (ink)
+    static let mist     = Color(hex: 0x6F6A58)   // secondary text (muted)
+    static let fairway  = Color(hex: 0x1F5138)   // pine — GOOD / clean / primary action
+    static let amber    = Color(hex: 0xB4893C)   // brass — minor
+    static let flag     = Color(hex: 0xA83C2B)   // clay — fault
 }
 
 extension Font {
-    static func display(_ size: CGFloat, _ w: Font.Weight = .heavy) -> Font {
-        .system(size: size, weight: w, design: .rounded)
+    // Headings & verdicts — serif (New York on iOS).
+    static func display(_ size: CGFloat, _ w: Font.Weight = .semibold) -> Font {
+        .system(size: size, weight: w, design: .serif)
     }
-    static func readout(_ size: CGFloat, _ w: Font.Weight = .semibold) -> Font {
-        .system(size: size, weight: w, design: .monospaced)
+    // Numbers — sans (SF Pro) with tabular figures, so stats align. No monospace font.
+    static func readout(_ size: CGFloat, _ w: Font.Weight = .bold) -> Font {
+        .system(size: size, weight: w).monospacedDigit()
     }
 }
 
-// Uppercase, tracked instrument label.
+// Uppercase, tracked label — sans.
 struct Eyebrow: View {
     let text: String
     var color: Color = Palette.mist
@@ -61,7 +64,7 @@ extension View {
     func card(_ pad: CGFloat = 18) -> some View { modifier(CardBG(pad: pad)) }
 }
 
-// Filled fairway primary action (dims clearly when disabled).
+// Filled pine primary action (parchment text; dims clearly when disabled).
 struct FairwayButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View { FairwayButtonBody(configuration: configuration) }
 }

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Swing Check — Fairway Heritage (refined, 2 fonts)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe7d4; --surface:#faf5e9; --surface2:#f1ead9; --line:#dccfb0;
+    --ink:#20261f; --ink2:#3c4137; --muted:#6f6a58;
+    --pine:#1f5138; --clay:#a83c2b; --brass:#b4893c;
+    --serif:'Fraunces', ui-serif, 'New York', Georgia, serif;
+    --sans:'Inter', -apple-system, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141310;color:#e9e3d3;font-family:var(--sans);padding:30px 20px 70px;-webkit-font-smoothing:antialiased}
+  .title{max-width:940px;margin:0 auto 4px;font-family:var(--serif);font-weight:600;font-size:28px;color:#f3ecda}
+  .rule{max-width:940px;margin:0 auto 26px;color:#a49c86;font-size:14.5px;line-height:1.5}
+  .rule b{color:#e9e3d3}
+  .wrap{max-width:940px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:820px){.wrap{grid-template-columns:1fr}}
+
+  .panel{background:var(--bg);border-radius:18px;padding:22px 20px 26px;border:1px solid #cabf9f}
+
+  /* type + color reference block spans both columns */
+  .ref{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px;color:var(--ink)}
+  .ref h3{font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+  .swatch{width:104px}
+  .swatch .box{height:46px;border-radius:9px;border:1px solid rgba(0,0,0,.12)}
+  .swatch .lbl{font-size:11px;color:var(--muted);margin-top:5px}
+  .swatch .lbl b{color:var(--ink);display:block;font-weight:600;font-size:12px}
+  .scale > div{padding:7px 0;border-bottom:1px dashed var(--line)}
+  .scale > div:last-child{border:0}
+  .tag{font-family:var(--sans);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .disp-l{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--ink)}
+  .disp-m{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink)}
+  .body-t{font-family:var(--sans);font-weight:400;font-size:16px;color:var(--ink2)}
+  .eye-t{font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .num-t{font-family:var(--sans);font-weight:800;font-size:34px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* app mockups */
+  .eyebrow{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .wordmark{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--ink);margin-top:3px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:15px}
+  .vrow{display:flex;align-items:center;gap:14px}
+  .bignum{font-family:var(--sans);font-weight:800;font-size:58px;line-height:.85;color:var(--clay);font-variant-numeric:tabular-nums}
+  .vtitle{font-family:var(--serif);font-weight:600;font-size:23px;color:var(--ink)}
+  .vsub{font-family:var(--sans);font-size:13.5px;color:var(--muted);margin-top:2px}
+  .fault{display:flex;gap:12px;margin-top:14px}
+  .bar{width:4px;border-radius:2px;background:var(--clay)}
+  .fname{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay)}
+  .measure{font-family:var(--sans);font-weight:800;font-size:30px;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:3px}
+  .unit{font-family:var(--sans);font-weight:500;font-size:12px;color:var(--muted)}
+  .coach{font-family:var(--sans);font-size:14.5px;line-height:1.45;color:var(--ink2);margin-top:6px}
+  .pills{display:flex;gap:8px;margin-top:15px}
+  .pill{flex:1;text-align:center;padding:10px 0;border-radius:10px;font-family:var(--sans);font-weight:600;font-size:14px;background:var(--surface2);color:var(--ink);border:1px solid var(--line)}
+  .pill.on{background:var(--pine);color:#f7f2e6;border-color:var(--pine)}
+  .plane{display:flex;align-items:center;gap:11px;margin-top:15px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+  .pdot{width:24px;height:24px;border-radius:50%;background:var(--pine);color:#f7f2e6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .ptxt{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink)}
+  .hero{font-family:var(--serif);font-weight:600;font-size:34px;color:var(--ink);margin:2px 0 8px}
+  .lede{font-family:var(--sans);font-size:15.5px;line-height:1.5;color:var(--muted)}
+  .cta{margin-top:16px;text-align:center;padding:15px;border-radius:13px;background:var(--pine);color:#f7f2e6;font-family:var(--sans);font-weight:700;font-size:16px}
+</style>
+</head>
+<body>
+  <div class="title">Fairway Heritage — refined</div>
+  <div class="rule"><b>Two fonts, one rule:</b> a <b>serif (New York)</b> for headings &amp; verdicts, a <b>sans (SF Pro)</b> for everything else including all numbers (tabular). Your Option-A palette, kept.</div>
+
+  <div class="wrap">
+    <!-- reference: palette + type scale -->
+    <div class="ref">
+      <h3>Palette</h3>
+      <div class="chips">
+        <div class="swatch"><div class="box" style="background:#efe7d4"></div><div class="lbl"><b>Parchment</b>#EFE7D4</div></div>
+        <div class="swatch"><div class="box" style="background:#faf5e9"></div><div class="lbl"><b>Card</b>#FAF5E9</div></div>
+        <div class="swatch"><div class="box" style="background:#1f5138"></div><div class="lbl"><b>Pine (good)</b>#1F5138</div></div>
+        <div class="swatch"><div class="box" style="background:#a83c2b"></div><div class="lbl"><b>Clay (fault)</b>#A83C2B</div></div>
+        <div class="swatch"><div class="box" style="background:#b4893c"></div><div class="lbl"><b>Brass</b>#B4893C</div></div>
+        <div class="swatch"><div class="box" style="background:#20261f"></div><div class="lbl"><b>Ink</b>#20261F</div></div>
+      </div>
+      <h3>Type scale — only two families</h3>
+      <div class="scale">
+        <div><span class="tag">Serif · display</span><div class="disp-l">Read your swing.</div></div>
+        <div><span class="tag">Serif · heading</span><div class="disp-m">Swing report</div></div>
+        <div><span class="tag">Sans · eyebrow</span><div class="eye-t">Down-the-line</div></div>
+        <div><span class="tag">Sans · body</span><div class="body-t">Record a face-on swing and get what to fix — computed on your phone.</div></div>
+        <div><span class="tag">Sans · numbers (tabular)</span><div class="num-t">+0.52 · 11° · 42.9%</div></div>
+      </div>
+    </div>
+
+    <!-- face-on report -->
+    <div class="panel">
+      <div class="eyebrow">Swing Lab</div>
+      <div class="wordmark">Swing Check</div>
+      <div class="card">
+        <div class="eyebrow">Swing report</div>
+        <div class="vrow"><div class="bignum">2</div>
+          <div><div class="vtitle">faults to fix</div><div class="vsub">Sway &middot; Early extension</div></div></div>
+        <div class="fault"><div class="bar"></div><div>
+          <div class="fname">Sway off ball</div>
+          <div class="measure">+0.52 <span class="unit">shoulder-widths</span></div>
+          <div class="coach">you're swaying off the ball instead of turning</div></div></div>
+      </div>
+      <div class="pills"><div class="pill on">Address</div><div class="pill">Top</div><div class="pill">Impact</div></div>
+    </div>
+
+    <!-- down-the-line + empty hero -->
+    <div class="panel">
+      <div class="eyebrow">Swing Lab</div>
+      <div class="hero">Read your swing.</div>
+      <div class="lede">Record a face-on or down-the-line swing. Get your key positions, faults, and swing plane — all on your phone.</div>
+      <div class="plane"><div class="pdot">&#10003;</div><div class="ptxt">On plane</div></div>
+      <div class="card">
+        <div class="eyebrow">Swing plane</div>
+        <div class="vrow" style="margin-top:6px"><div class="ptxt" style="font-size:22px">Over the top</div></div>
+        <div class="coach">the club drops outside your backswing plane coming down</div>
+      </div>
+      <div class="cta">Record a swing</div>
+    </div>
+  </div>
+</body>
+</html>

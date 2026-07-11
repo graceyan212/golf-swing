@@ -53,7 +53,7 @@ struct ContentView: View {
                 .padding(20)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .tint(Palette.fairway)
         .onChange(of: pickerItem) { _, item in loadPicked(item) }
         .fullScreenCover(isPresented: $showCamera) {
@@ -163,7 +163,7 @@ struct ContentView: View {
                     Text("Sway, hip slide and extension all in range").font(.system(size: 13)).foregroundStyle(Palette.mist)
                 }
             } else {
-                Text("\(analyzer.faults.count)").font(.display(66)).monospacedDigit().foregroundStyle(faultColor)
+                Text("\(analyzer.faults.count)").font(.readout(66)).foregroundStyle(faultColor)
                 VStack(alignment: .leading, spacing: 3) {
                     Eyebrow("Swing report")
                     Text(analyzer.faults.count == 1 ? "fault to fix" : "faults to fix")
