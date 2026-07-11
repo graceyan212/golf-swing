@@ -24,7 +24,6 @@ enum Biomechanics {
 
     private static func r2(_ x: Double) -> Double { (x * 100).rounded() / 100 }
     private static func r1(_ x: Double) -> Double { (x * 10).rounded() / 10 }
-    private static func sgn2(_ x: Double) -> String { (x >= 0 ? "+" : "") + String(format: "%.2f", x) }
 
     static func analyze(address A: Pose?, top T: Pose?, impact I: Pose?) -> [Fault] {
         var faults: [Fault] = []
@@ -32,25 +31,22 @@ enum Biomechanics {
             let sway = lat(A.nose, T.nose, shoulderWidth(A))
             if abs(sway) > swayThresh {
                 faults.append(Fault(
-                    name: "sway off ball", value: r2(sway), threshold: swayThresh,
-                    note: "head slides \(sgn2(sway)) shoulder-widths on the backswing " +
-                          "(steady is within ±\(swayThresh)) — you're swaying off the ball instead of turning"))
+                    name: "You sway off the ball", value: r2(sway), threshold: swayThresh,
+                    note: "On the backswing your head slides sideways. Try to turn your shoulders instead of sliding off the ball."))
             }
         }
         if let A, let I {
             let slide = lat(midHip(A), midHip(I), shoulderWidth(A))
             if abs(slide) > slideThresh {
                 faults.append(Fault(
-                    name: "hip slide", value: r2(slide), threshold: slideThresh,
-                    note: "hips slide \(sgn2(slide)) shoulder-widths laterally by impact " +
-                          "(>\(slideThresh)) — driving past the ball instead of rotating"))
+                    name: "Your hips slide", value: r2(slide), threshold: slideThresh,
+                    note: "Your hips push toward the target instead of turning. Try to rotate your hips around, not slide them."))
             }
             let drop = spineTilt(A) - spineTilt(I)   // + = spine straightened toward vertical
             if drop > earlyExtThresh {
                 faults.append(Fault(
-                    name: "early extension", value: r1(drop), threshold: earlyExtThresh,
-                    note: "spine straightens \(Int(drop.rounded()))° from address to impact " +
-                          "(>\(earlyExtThresh)) — early extension / standing up through the shot"))
+                    name: "You stand up too early", value: r1(drop), threshold: earlyExtThresh,
+                    note: "You straighten up as you swing through. Try to stay bent over, in your posture, until after you hit the ball."))
             }
         }
         return faults

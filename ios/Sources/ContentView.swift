@@ -39,8 +39,8 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
                     Picker("Mode", selection: $mode) {
-                        Text("Face-on faults").tag(0)
-                        Text("Down-the-line").tag(1)
+                        Text("Front view").tag(0)
+                        Text("Side view").tag(1)
                     }
                     .pickerStyle(.segmented)
                     if mode == 1 {
@@ -68,67 +68,60 @@ struct ContentView: View {
 
     // MARK: header
     private var header: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Eyebrow("Swing Lab")
-            Text("Swing Check").font(.display(30)).foregroundStyle(Palette.chalk)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("Swing Check").font(.display(34)).foregroundStyle(Palette.chalk)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: empty state
     private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Read your swing.").font(.display(38)).foregroundStyle(Palette.chalk)
-                Text("Record a face-on swing. Get your key positions and what to fix — computed on your phone.")
-                    .font(.system(size: 16)).foregroundStyle(Palette.mist)
+        VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Check your swing").font(.display(40)).foregroundStyle(Palette.chalk)
+                Text("Take a video of your golf swing. We'll show you what to fix, in plain words.")
+                    .font(.system(size: 19)).foregroundStyle(Palette.mist).lineSpacing(3)
             }
             actionButtons
-            VStack(alignment: .leading, spacing: 8) {
-                Eyebrow("For a clean read")
-                ForEach(["Film face-on (camera facing you)", "Fit your whole body in frame",
-                         "Hold the phone steady", "Trim to just the swing"], id: \.self) { t in
-                    HStack(spacing: 10) {
-                        Circle().fill(Palette.fairway).frame(width: 5, height: 5)
-                        Text(t).font(.system(size: 14)).foregroundStyle(Palette.mist)
-                    }
-                }
+            HStack(spacing: 12) {
+                Image(systemName: "lightbulb.fill").font(.system(size: 18)).foregroundStyle(Palette.amber)
+                Text(mode == 1
+                     ? "Stand behind yourself, camera down the target line, whole body in view."
+                     : "Face the camera, stand back so your whole body shows, and hold the phone still.")
+                    .font(.system(size: 17)).foregroundStyle(Palette.chalk).lineSpacing(2)
             }.card()
         }
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Button {
                 if cameraAvailable { showCamera = true }
             } label: {
-                Label("Record a swing", systemImage: "video.fill")
+                Label("Record my swing", systemImage: "video.fill")
             }
             .buttonStyle(FairwayButton())
             .disabled(!cameraAvailable)
 
             if !cameraAvailable {
-                Text("Recording needs a real device — in the Simulator, use “Choose from library” or the demo clip.")
-                    .font(.system(size: 12)).foregroundStyle(Palette.mist)
+                Text("To record, open this on your iPhone. For now, pick a saved video or see an example.")
+                    .font(.system(size: 14)).foregroundStyle(Palette.mist)
                     .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             }
 
             PhotosPicker(selection: $pickerItem, matching: .videos) {
-                Label("Choose from library", systemImage: "photo.on.rectangle.angled")
+                Label("Pick a saved video", systemImage: "photo.on.rectangle.angled")
             }
             .buttonStyle(GhostButton())
 
             if Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") != nil {
-                Button { runDemo() } label: { Label("Try the demo clip", systemImage: "play.circle") }
+                Button { runDemo() } label: { Label("See an example", systemImage: "play.circle") }
                     .buttonStyle(GhostButton())
             }
         }
     }
 
     private var analyzingCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Eyebrow("Analyzing", color: Palette.fairway)
-            Text(analyzer.status).font(.system(size: 15)).foregroundStyle(Palette.chalk)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Looking at your swing…").font(.display(22)).foregroundStyle(Palette.chalk)
             ProgressView(value: analyzer.progress).tint(Palette.fairway)
         }.card()
     }
@@ -137,9 +130,9 @@ struct ContentView: View {
     private var results: some View {
         VStack(alignment: .leading, spacing: 18) {
             verdictHero
-            scrubCard
+            swingCard
             diagnosis
-            Button { analyzer.reset() } label: { Label("Analyze another swing", systemImage: "arrow.counterclockwise") }
+            Button { analyzer.reset() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise") }
                 .buttonStyle(GhostButton())
         }
     }
@@ -150,22 +143,19 @@ struct ContentView: View {
         HStack(alignment: .center, spacing: 16) {
             if analyzer.faults.isEmpty {
                 ZStack {
-                    Circle().fill(Palette.fairway.opacity(0.16)).frame(width: 66, height: 66)
-                    Image(systemName: "checkmark").font(.system(size: 28, weight: .heavy)).foregroundStyle(Palette.fairway)
+                    Circle().fill(Palette.fairway.opacity(0.16)).frame(width: 72, height: 72)
+                    Image(systemName: "checkmark").font(.system(size: 34, weight: .heavy)).foregroundStyle(Palette.fairway)
                 }
-                VStack(alignment: .leading, spacing: 3) {
-                    Eyebrow("Swing report")
-                    Text("Clean swing").font(.display(28)).foregroundStyle(Palette.chalk)
-                    Text("Sway, hip slide and extension all in range").font(.system(size: 13)).foregroundStyle(Palette.mist)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Looking good!").font(.display(30)).foregroundStyle(Palette.chalk)
+                    Text("Nothing major to fix.").font(.system(size: 17)).foregroundStyle(Palette.mist)
                 }
             } else {
-                Text("\(analyzer.faults.count)").font(.readout(66)).foregroundStyle(faultColor)
-                VStack(alignment: .leading, spacing: 3) {
-                    Eyebrow("Swing report")
-                    Text(analyzer.faults.count == 1 ? "fault to fix" : "faults to fix")
-                        .font(.display(23)).foregroundStyle(Palette.chalk)
-                    Text(analyzer.faults.map { $0.name.capitalized }.joined(separator: " · "))
-                        .font(.system(size: 13)).foregroundStyle(Palette.mist).lineLimit(2)
+                Text("\(analyzer.faults.count)").font(.readout(72)).foregroundStyle(faultColor)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(analyzer.faults.count == 1 ? "thing to work on" : "things to work on")
+                        .font(.display(26)).foregroundStyle(Palette.chalk)
+                    Text("See below for what to do.").font(.system(size: 16)).foregroundStyle(Palette.mist)
                 }
                 Spacer(minLength: 0)
             }
@@ -181,61 +171,25 @@ struct ContentView: View {
         let p = analyzer.playhead
         return p >= 0 && p < analyzer.frames.count ? analyzer.frames[p] : nil
     }
-    private var currentAssignment: String? {
-        let hits = SwingEvent.allCases.filter { analyzer.events[$0] == analyzer.playhead }
-        return hits.isEmpty ? nil : hits.map { $0.rawValue }.joined(separator: " · ")
-    }
-
-    private var scrubCard: some View {
+    private var swingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ZStack(alignment: .topLeading) {
-                SwingCanvas(image: currentThumb, frame: currentPlayFrame)
-                HStack(spacing: 6) {
-                    Circle().fill(Palette.fairway).frame(width: 6, height: 6)
-                    Text("POSE").font(.system(size: 10, weight: .bold)).tracking(1.2).foregroundStyle(Palette.chalk)
-                }
-                .padding(.horizontal, 9).padding(.vertical, 5)
-                .background(.ultraThinMaterial, in: Capsule()).padding(10)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-            HStack {
-                Eyebrow("Frame \(analyzer.playhead + 1) / \(max(1, analyzer.frames.count))")
-                Spacer()
-                if let a = currentAssignment { Eyebrow(a, color: Palette.fairway) }
-            }
-
+            SwingCanvas(image: currentThumb, frame: currentPlayFrame)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            Text("Slide to watch your swing").font(.system(size: 16)).foregroundStyle(Palette.mist)
             Filmstrip(thumbs: analyzer.frameThumbs, total: analyzer.frames.count,
                       playhead: $analyzer.playhead, events: analyzer.events)
-
-            VStack(alignment: .leading, spacing: 8) {
-                Eyebrow("Set this frame as")
-                HStack(spacing: 8) { ForEach(SwingEvent.allCases) { setButton($0) } }
-            }
         }.card(10)
-    }
-
-    private func setButton(_ e: SwingEvent) -> some View {
-        let here = analyzer.events[e] == analyzer.playhead
-        return Button { analyzer.assign(e, frame: analyzer.playhead) } label: {
-            Text(e.rawValue).font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(here ? Palette.turf : Palette.chalk)
-                .frame(maxWidth: .infinity).padding(.vertical, 10)
-                .background(here ? Palette.fairway : Palette.surface2)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(here ? Color.clear : Palette.line, lineWidth: 1))
-        }.buttonStyle(.plain)
     }
 
     private var diagnosis: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Eyebrow("Diagnosis")
+            Text(analyzer.faults.isEmpty ? "Your swing" : "What to work on")
+                .font(.display(22)).foregroundStyle(Palette.chalk)
             if analyzer.faults.isEmpty {
                 HStack(spacing: 12) {
-                    Image(systemName: "checkmark.seal.fill").foregroundStyle(Palette.fairway)
-                    Text("No major faults — sway, hip slide and early extension are all within range.")
-                        .font(.system(size: 14)).foregroundStyle(Palette.chalk)
+                    Image(systemName: "checkmark.seal.fill").font(.system(size: 22)).foregroundStyle(Palette.fairway)
+                    Text("No big problems. Your body stays steady and turns nicely.")
+                        .font(.system(size: 17)).foregroundStyle(Palette.chalk)
                 }.card()
             } else {
                 ForEach(analyzer.faults) { FaultCard(fault: $0) }
@@ -341,27 +295,20 @@ struct Filmstrip: View {
     }
 }
 
-// MARK: - Fault card
+// MARK: - Fault card — plain title + what to do, no jargon or numbers
 struct FaultCard: View {
     let fault: Fault
-    private var valueUnit: (String, String) {
-        if fault.name.contains("extension") { return ("\(Int(fault.value))°", "spine straightening") }
-        return (String(format: "%+.2f", fault.value), "shoulder-widths")
-    }
-    private var coaching: String { fault.note.components(separatedBy: "— ").last ?? fault.note }
     var body: some View {
-        HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 2).fill(Palette.flag).frame(width: 4)
-            VStack(alignment: .leading, spacing: 7) {
-                Eyebrow(fault.name, color: Palette.flag)
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(valueUnit.0).font(.readout(30, .bold)).foregroundStyle(Palette.chalk)
-                    Text(valueUnit.1).font(.system(size: 12)).foregroundStyle(Palette.mist)
-                }
-                Text(coaching).font(.system(size: 14)).foregroundStyle(Palette.mist).fixedSize(horizontal: false, vertical: true)
+        HStack(alignment: .top, spacing: 14) {
+            RoundedRectangle(cornerRadius: 2).fill(Palette.flag).frame(width: 5)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(fault.name).font(.display(21)).foregroundStyle(Palette.chalk)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(fault.note).font(.system(size: 17)).foregroundStyle(Palette.mist)
+                    .lineSpacing(2).fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18).frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Palette.line, lineWidth: 1))

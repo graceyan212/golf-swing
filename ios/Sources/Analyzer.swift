@@ -28,7 +28,7 @@ final class Analyzer: ObservableObject {
                 self.trackedCount = ex.frames.filter { $0.ok }.count
                 guard let ev else {
                     self.busy = false
-                    self.status = "Couldn't track your body — film face-on, full body in frame, good light, trimmed to the swing."
+                    self.status = "We couldn't see you clearly. Stand back so your whole body shows, in good light, and try again."
                     if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: ex.frames.count) }
                     return
                 }
@@ -36,7 +36,7 @@ final class Analyzer: ObservableObject {
                 self.playhead = ev[.address] ?? 0
                 self.recompute()
                 self.busy = false
-                self.status = "Done — \(self.trackedCount)/\(ex.frames.count) frames tracked. Scrub to a frame, then set it as Address, Top or Impact."
+                self.status = "All done."
                 if CommandLine.arguments.contains("-autodemo") { self.writeAutodemoDump(total: ex.frames.count) }
             } catch {
                 self.busy = false
@@ -48,7 +48,7 @@ final class Analyzer: ObservableObject {
     func reset() {
         frames = []; events = [:]; faults = []; frameThumbs = []
         selected = .address; playhead = 0; trackedCount = 0; progress = 0; busy = false
-        status = "Pick or record a face-on swing video to analyze."
+        status = "Record or pick a swing video to check."
     }
 
     func recompute() {
@@ -89,10 +89,10 @@ final class Analyzer: ObservableObject {
         events = [.address: 3, .top: 24, .impact: 33]
         trackedCount = n
         faults = [
-            Fault(name: "sway off ball", value: 0.52, threshold: 0.4,
-                  note: "head slides +0.52 shoulder-widths on the backswing (steady is within ±0.4) — you're swaying off the ball instead of turning"),
-            Fault(name: "early extension", value: 11, threshold: 8,
-                  note: "spine straightens 11° from address to impact (>8.0) — early extension / standing up through the shot"),
+            Fault(name: "You sway off the ball", value: 0.52, threshold: 0.4,
+                  note: "On the backswing your head slides sideways. Try to turn your shoulders instead of sliding off the ball."),
+            Fault(name: "You stand up too early", value: 11, threshold: 8,
+                  note: "You straighten up as you swing through. Try to stay bent over, in your posture, until after you hit the ball."),
         ]
         status = "Design preview"
         playhead = 3

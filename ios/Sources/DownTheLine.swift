@@ -7,7 +7,7 @@ import UIKit
 // establishes the address plane, and gives a first-pass on-plane / over-the-top read.
 @MainActor
 final class PlaneAnalyzer: ObservableObject {
-    @Published var status = "Record or choose a down-the-line swing (camera behind you)."
+    @Published var status = "Record or pick a swing filmed from behind you."
     @Published var busy = false
     @Published var progress: Double = 0
     @Published var dets: [ClubDetection] = []
@@ -28,15 +28,14 @@ final class PlaneAnalyzer: ObservableObject {
 
     func analyze(url: URL) {
         busy = true; progress = 0; dets = []; thumbs = []; planeLine = nil; verdict = nil
-        status = "Analyzing swing…"
-        guard let tr = tracker else { busy = false; status = "Club model failed to load."; return }
+        status = "Looking at your swing…"
+        guard let tr = tracker else { busy = false; status = "Couldn't start. Please try again."; return }
         Task {
             let (ds, ts) = await Self.run(url: url, tracker: tr, n: n) { p in Task { @MainActor in self.progress = p } }
             self.dets = ds; self.thumbs = ts; self.playhead = 0
             self.computePlane()
-            let tracked = ds.filter { $0.hasClub }.count
             self.busy = false
-            self.status = "Done — club tracked in \(tracked)/\(ds.count) frames. Scrub to inspect. Plane read is a first pass — tune on device."
+            self.status = "All done. Slide to watch your swing."
         }
     }
 
@@ -62,7 +61,7 @@ final class PlaneAnalyzer: ObservableObject {
     private func computePlane() {
         let clubIdx = dets.indices.filter { dets[$0].hasClub }
         guard clubIdx.count >= 4 else {
-            verdict = "Couldn't track the club — film down-the-line, full club in frame, good light."
+            verdict = "We couldn't follow your club. Film from behind you with the whole club in view, in good light."
             return
         }
         let addr = clubIdx.first(where: { $0 <= dets.count * 3 / 10 }) ?? clubIdx.first!
@@ -79,7 +78,7 @@ final class PlaneAnalyzer: ObservableObject {
         let downswing = clubIdx.filter { $0 > top }
         let maxOutside = downswing.compactMap { dets[$0].clubhead.map { abs(signedDist($0)) } }.max() ?? 0
         overTop = maxOutside > 0.06          // normalized threshold — v1, tune on device
-        verdict = overTop ? "Over the top" : "On plane"
+        verdict = overTop ? "Coming over the top" : "Good swing path"
     }
 }
 
@@ -122,8 +121,8 @@ struct DownTheLineSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if an.busy {
-                VStack(alignment: .leading, spacing: 10) {
-                    Eyebrow("Analyzing", color: Palette.fairway)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Looking at your swing…").font(.display(22)).foregroundStyle(Palette.chalk)
                     ProgressView(value: an.progress).tint(Palette.fairway)
                 }.card()
             }
@@ -135,24 +134,23 @@ struct DownTheLineSection: View {
     }
 
     private var intro: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Swing plane").font(.display(30)).foregroundStyle(Palette.chalk)
-            Text("Film from **down-the-line** — camera behind you, looking down the target line. Tracks your club and checks if you're on plane or over the top.")
-                .font(.system(size: 15)).foregroundStyle(Palette.mist)
-            VStack(spacing: 10) {
-                Button { if cameraAvailable { showCam = true } } label: { Label("Record a swing", systemImage: "video.fill").frame(maxWidth: .infinity) }
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Check your swing path").font(.display(34)).foregroundStyle(Palette.chalk)
+            Text("Film your swing from behind you, looking where the ball goes. We'll follow your club and show your path.")
+                .font(.system(size: 19)).foregroundStyle(Palette.mist).lineSpacing(3)
+            VStack(spacing: 12) {
+                Button { if cameraAvailable { showCam = true } } label: { Label("Record my swing", systemImage: "video.fill").frame(maxWidth: .infinity) }
                     .buttonStyle(FairwayButton()).disabled(!cameraAvailable)
                 if !cameraAvailable {
-                    Text("Recording needs a real device — use Choose or the demo in the Simulator.")
-                        .font(.system(size: 12)).foregroundStyle(Palette.mist).frame(maxWidth: .infinity)
+                    Text("To record, open this on your iPhone. For now, pick a saved video or see an example.")
+                        .font(.system(size: 14)).foregroundStyle(Palette.mist).multilineTextAlignment(.center).frame(maxWidth: .infinity)
                 }
-                PhotosPicker(selection: $pick, matching: .videos) { Label("Choose from library", systemImage: "photo.on.rectangle.angled").frame(maxWidth: .infinity) }
+                PhotosPicker(selection: $pick, matching: .videos) { Label("Pick a saved video", systemImage: "photo.on.rectangle.angled").frame(maxWidth: .infinity) }
                     .buttonStyle(GhostButton())
                 if Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") != nil {
-                    Button { runDemo() } label: { Label("Try the demo clip", systemImage: "play.circle").frame(maxWidth: .infinity) }.buttonStyle(GhostButton())
+                    Button { runDemo() } label: { Label("See an example", systemImage: "play.circle").frame(maxWidth: .infinity) }.buttonStyle(GhostButton())
                 }
             }
-            Text(an.status).font(.footnote).foregroundStyle(Palette.mist)
         }
     }
 
@@ -162,10 +160,11 @@ struct DownTheLineSection: View {
             HStack(spacing: 14) {
                 Image(systemName: an.overTop ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .font(.system(size: 30)).foregroundStyle(color)
-                VStack(alignment: .leading, spacing: 3) {
-                    Eyebrow("Swing plane")
-                    Text(an.verdict ?? "—").font(.display(24)).foregroundStyle(Palette.chalk)
-                    Text("first-pass read — dashed line is your address plane").font(.system(size: 12)).foregroundStyle(Palette.mist)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(an.verdict ?? "—").font(.display(26)).foregroundStyle(Palette.chalk)
+                    Text(an.overTop ? "Your club swings out and over on the way down."
+                                    : "Your club stays on a nice path down to the ball.")
+                        .font(.system(size: 16)).foregroundStyle(Palette.mist).fixedSize(horizontal: false, vertical: true)
                 }
             }.card()
 
@@ -174,12 +173,10 @@ struct DownTheLineSection: View {
                             det: an.playhead < an.dets.count ? an.dets[an.playhead] : nil,
                             planeLine: an.planeLine)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                Eyebrow("Frame \(an.playhead + 1) / \(an.dets.count)")
+                Text("Slide to watch your swing").font(.system(size: 16)).foregroundStyle(Palette.mist)
                 Filmstrip(thumbs: an.thumbs, total: an.dets.count, playhead: $an.playhead, events: [:])
             }.card(10)
-
-            Text(an.status).font(.footnote).foregroundStyle(Palette.mist)
-            Button { an.reset() } label: { Label("Analyze another", systemImage: "arrow.counterclockwise").frame(maxWidth: .infinity) }
+            Button { an.reset() } label: { Label("Check another swing", systemImage: "arrow.counterclockwise").frame(maxWidth: .infinity) }
                 .buttonStyle(GhostButton())
         }
     }
