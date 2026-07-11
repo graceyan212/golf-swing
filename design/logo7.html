@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Swing Check — brush checkmark + ball</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe7d4; --line:#dccfb0; --ink:#20261f; --muted:#6f6a58;
+    --pine:#1f5138; --clay:#a83c2b; --brass:#b4893c;
+    --serif:'Fraunces', ui-serif, Georgia, serif; --sans:'Inter', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141310;color:#e9e3d3;font-family:var(--sans);padding:34px 20px 90px;-webkit-font-smoothing:antialiased}
+  .title{max-width:1080px;margin:0 auto 4px;font-family:var(--serif);font-weight:600;font-size:30px;color:#f3ecda}
+  .rule{max-width:1080px;margin:0 auto 28px;color:#a49c86;font-size:14.5px;line-height:1.5}
+  .rule b{color:#e9e3d3}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#7d7660;margin:34px 0 14px}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .card{background:var(--bg);border:1px solid #cabf9f;border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .mk{height:150px;display:flex;align-items:center;justify-content:center}
+  .name{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink)}
+  .desc{font-size:12px;line-height:1.4;color:var(--muted);text-align:center}
+  .sizes{display:flex;align-items:center;gap:20px;background:var(--bg);border:1px solid #cabf9f;border-radius:20px;padding:24px 26px}
+  .s{display:flex;flex-direction:column;align-items:center;gap:8px}.lbl{font-size:11px;color:var(--muted)}
+  .icons{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .icell{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .icon{width:130px;height:130px;border-radius:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+  .icaption{font-size:12px;color:#a49c86}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Swing Check — brush checkmark + ball</div>
+  <div class="rule">Your reference shape: a tapered <b>hand-drawn checkmark</b> — short left arm, tall sweeping right arm, pointed ends. The golf ball rests at the top of the tall arm. Three treatments.</div>
+  <div class="row" id="marks"></div>
+
+  <h2>Recommended — small-size test</h2>
+  <div class="sizes" id="sizes"></div>
+
+  <h2>Recommended — icon backgrounds</h2>
+  <div class="icons" id="icons"></div>
+</div>
+
+<script>
+function quad(p0,p1,p2,t){const m=1-t;return [m*m*p0[0]+2*m*t*p1[0]+t*t*p2[0], m*m*p0[1]+2*m*t*p1[1]+t*t*p2[1]];}
+// Tapered filled checkmark: arm1 (L->V), arm2 (V->R). Thin pointed tips, thick joint, mid-arm bulge.
+function checkPath(L,cL,V,cR,R,wtip,wjoint,k){
+  const N=44, cen=[], wid=[];
+  for(let i=0;i<=N;i++){const t=i/N; cen.push(quad(L,cL,V,t)); wid.push((wtip+(wjoint-wtip)*t)*(1+k*Math.sin(Math.PI*t)));}
+  for(let i=1;i<=N;i++){const t=i/N; cen.push(quad(V,cR,R,t)); wid.push((wjoint+(wtip-wjoint)*t)*(1+k*Math.sin(Math.PI*t)));}
+  const left=[],right=[];
+  for(let i=0;i<cen.length;i++){
+    const a=cen[Math.max(0,i-1)], b=cen[Math.min(cen.length-1,i+1)];
+    let tx=b[0]-a[0], ty=b[1]-a[1]; const L2=Math.hypot(tx,ty)||1; tx/=L2; ty/=L2;
+    const nx=-ty, ny=tx, hw=wid[i]/2;
+    left.push([cen[i][0]+nx*hw, cen[i][1]+ny*hw]);
+    right.push([cen[i][0]-nx*hw, cen[i][1]-ny*hw]);
+  }
+  let d='M'+left[0][0].toFixed(1)+' '+left[0][1].toFixed(1);
+  for(let i=1;i<left.length;i++) d+='L'+left[i][0].toFixed(1)+' '+left[i][1].toFixed(1);
+  for(let i=right.length-1;i>=0;i--) d+='L'+right[i][0].toFixed(1)+' '+right[i][1].toFixed(1);
+  return d+'Z';
+}
+function dimples(cx,cy,R,dr,fill){
+  const r1=R*0.36, r2=R*0.66, pts=[[0,0]];
+  for(let i=0;i<6;i++){const a=Math.PI/3*i; pts.push([r1*Math.cos(a), r1*Math.sin(a)]);}
+  for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6; pts.push([r2*Math.cos(a), r2*Math.sin(a)]);}
+  return '<g fill="'+fill+'">'+pts.map(p=>`<circle cx="${(cx+p[0]).toFixed(1)}" cy="${(cy+p[1]).toFixed(1)}" r="${dr}"/>`).join('')+'</g>';
+}
+
+// geometry variants
+const G = {
+  tall:   {L:[26,52],cL:[41,80],V:[53,93],cR:[62,50],R:[84,26], ball:[92,18], br:13.5},
+  taller: {L:[28,50],cL:[42,80],V:[54,94],cR:[66,44],R:[90,16], ball:[97,12], br:12.5},
+};
+const gp = G.tall;
+const checkTall = checkPath(gp.L,gp.cL,gp.V,gp.cR,gp.R,2.2,12.5,0.55);
+const checkTaller = checkPath(G.taller.L,G.taller.cL,G.taller.V,G.taller.cR,G.taller.R,2.0,11.5,0.5);
+// no-ball version: extend right tip higher
+const checkSolo = checkPath([26,52],[41,80],[54,94],[64,42],[92,12],2.2,12.5,0.55);
+
+function svg(inner,size){return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" fill="none">${inner}</svg>`;}
+
+// MARKS
+const marks = [
+  {name:'1 · Check + ball', desc:'Tapered brush check, dimpled ball at the top of the tall arm.',
+   inner:`<path d="${checkTall}" fill="#1f5138"/><circle cx="${gp.ball[0]}" cy="${gp.ball[1]}" r="${gp.br}" fill="#efe7d4" stroke="#1f5138" stroke-width="2.5"/>${dimples(gp.ball[0],gp.ball[1],gp.br,1.5,'#1f5138')}`},
+  {name:'2 · Taller sweep', desc:'Longer, steeper right arm — more dynamic. Ball at the very top.',
+   inner:`<path d="${checkTaller}" fill="#1f5138"/><circle cx="${G.taller.ball[0]}" cy="${G.taller.ball[1]}" r="${G.taller.br}" fill="#efe7d4" stroke="#1f5138" stroke-width="2.5"/>${dimples(G.taller.ball[0],G.taller.ball[1],G.taller.br,1.4,'#1f5138')}`},
+  {name:'3 · Check only (no ball)', desc:'The brush check alone — the shape already reads bounce + check.',
+   inner:`<path d="${checkSolo}" fill="#1f5138"/>`},
+];
+document.getElementById('marks').innerHTML = marks.map(m=>
+  `<div class="card"><div class="mk">${svg(m.inner,150)}</div><div class="name">${m.name}</div><div class="desc">${m.desc}</div></div>`).join('');
+
+// SIZE TEST (recommended = mark 1, on pine)
+const innerLight = `<path d="${checkTall}" fill="#efe7d4"/><circle cx="${gp.ball[0]}" cy="${gp.ball[1]}" r="${gp.br}" fill="#efe7d4"/>${dimples(gp.ball[0],gp.ball[1],gp.br,1.5,'#1f5138')}`;
+const sizes=[120,76,46,28];
+document.getElementById('sizes').innerHTML = sizes.map(s=>
+  `<div class="s"><svg width="${s}" height="${s}" viewBox="0 0 120 120" fill="none"><rect width="120" height="120" rx="27" fill="#1f5138"/>${innerLight}</svg><div class="lbl">${s}</div></div>`).join('');
+
+// ICON BACKGROUNDS
+const backs=[
+  {bg:'#1f5138',cap:'Pine',check:'#efe7d4',ball:'#efe7d4',dim:'#1f5138'},
+  {bg:'linear-gradient(150deg,#256039,#173d29)',cap:'Pine gradient',check:'#f4eedd',ball:'#f4eedd',dim:'#1f5138'},
+  {bg:'#efe7d4',cap:'Parchment',check:'#1f5138',ball:'#1f5138',dim:'#efe7d4'},
+  {bg:'#20261f',cap:'Ink',check:'#e7dcc0',ball:'#b4893c',dim:'#20261f'},
+];
+document.getElementById('icons').innerHTML = backs.map(b=>{
+  const inner=`<path d="${checkTall}" fill="${b.check}"/><circle cx="${gp.ball[0]}" cy="${gp.ball[1]}" r="${gp.br}" fill="${b.ball}"/>${dimples(gp.ball[0],gp.ball[1],gp.br,1.5,b.dim)}`;
+  return `<div class="icell"><div class="icon" style="background:${b.bg}">${svg(inner,82)}</div><div class="icaption">${b.cap}</div></div>`;
+}).join('');
+</script>
+</body>
+</html>

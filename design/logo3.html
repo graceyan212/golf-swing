@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Swing Check — motion & analysis marks</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe7d4; --surface:#faf5e9; --line:#dccfb0; --ink:#20261f; --muted:#6f6a58;
+    --pine:#1f5138; --clay:#a83c2b; --brass:#b4893c;
+    --serif:'Fraunces', ui-serif, Georgia, serif; --sans:'Inter', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141310;color:#e9e3d3;font-family:var(--sans);padding:34px 20px 90px;-webkit-font-smoothing:antialiased}
+  .title{max-width:1080px;margin:0 auto 4px;font-family:var(--serif);font-weight:600;font-size:30px;color:#f3ecda}
+  .rule{max-width:1080px;margin:0 auto 28px;color:#a49c86;font-size:14.5px;line-height:1.5}
+  .rule b{color:#e9e3d3}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#7d7660;margin:34px 0 14px}
+  .row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:900px){.row{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--bg);border:1px solid #cabf9f;border-radius:20px;padding:24px 18px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .mk{height:124px;display:flex;align-items:center;justify-content:center}
+  .name{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink)}
+  .desc{font-size:12px;line-height:1.4;color:var(--muted);text-align:center}
+  .icons{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:6px}
+  .icell{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .icon{width:132px;height:132px;border-radius:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+  .icaption{font-size:12px;color:#a49c86}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Swing Check — motion &amp; analysis marks</div>
+  <div class="rule">These read as <b>your swing being tracked and measured</b>, not just "golf." The app finds your path, positions and plane — so the mark shows exactly that.</div>
+
+  <h2>Four marks</h2>
+  <div class="row">
+
+    <!-- A: swing plane read -->
+    <div class="card">
+      <div class="mk">
+        <svg width="128" height="128" viewBox="0 0 120 120" fill="none">
+          <line x1="20" y1="98" x2="104" y2="98" stroke="#dccfb0" stroke-width="3" stroke-linecap="round"/>
+          <path d="M34 98 L96 30" stroke="#b4893c" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round"/>
+          <path d="M34 98 L88 44" stroke="#1f5138" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="88" cy="44" r="7.5" fill="#1f5138"/>
+          <circle cx="34" cy="93" r="6.5" fill="#20261f"/>
+          <path d="M52 98 A 18 18 0 0 1 47 84" stroke="#a83c2b" stroke-width="2.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="name">A · Swing plane</div>
+      <div class="desc">Your plane (pine) vs. the ideal (dashed) — exactly what the app measures.</div>
+    </div>
+
+    <!-- B: tracked swing arc + positions -->
+    <div class="card">
+      <div class="mk">
+        <svg width="128" height="128" viewBox="0 0 120 120" fill="none">
+          <line x1="18" y1="96" x2="102" y2="96" stroke="#dccfb0" stroke-width="3" stroke-linecap="round"/>
+          <path d="M32 94 C 30 34, 78 24, 90 60" stroke="#1f5138" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="32" cy="94" r="6.5" fill="#20261f"/>
+          <circle cx="55" cy="30.5" r="8" fill="#b4893c"/>
+          <circle cx="90" cy="60" r="6.5" fill="#a83c2b"/>
+        </svg>
+      </div>
+      <div class="name">B · Tracked path</div>
+      <div class="desc">The swing traced through address, top and impact — the positions it grades.</div>
+    </div>
+
+    <!-- C: golfer silhouette -->
+    <div class="card">
+      <div class="mk">
+        <svg width="128" height="128" viewBox="0 0 120 120" fill="none">
+          <circle cx="55" cy="26" r="9" fill="#1f5138"/>
+          <path d="M55 36 C 50 50, 48 60, 52 70" stroke="#1f5138" stroke-width="9" stroke-linecap="round"/>
+          <path d="M52 46 C 66 40, 82 42, 90 34" stroke="#1f5138" stroke-width="8" stroke-linecap="round"/>
+          <path d="M90 34 L104 20" stroke="#b4893c" stroke-width="5" stroke-linecap="round"/>
+          <path d="M52 68 L44 96" stroke="#1f5138" stroke-width="9" stroke-linecap="round"/>
+          <path d="M54 68 L70 92" stroke="#1f5138" stroke-width="9" stroke-linecap="round"/>
+          <line x1="26" y1="100" x2="96" y2="100" stroke="#dccfb0" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="name">C · The golfer</div>
+      <div class="desc">A player at the top of the backswing. The most literal "swing."</div>
+    </div>
+
+    <!-- D: ball with motion trail -->
+    <div class="card">
+      <div class="mk">
+        <svg width="128" height="128" viewBox="0 0 120 120" fill="none">
+          <path d="M22 96 C 34 96, 46 70, 60 60" stroke="#1f5138" stroke-width="7" stroke-linecap="round" opacity=".9"/>
+          <path d="M30 92 C 40 90, 44 78, 50 72" stroke="#1f5138" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+          <circle cx="76" cy="48" r="18" fill="#efe7d4" stroke="#1f5138" stroke-width="3"/>
+          <g fill="#1f5138"><circle cx="76" cy="48" r="2.4"/><circle cx="70" cy="44" r="2.4"/><circle cx="82" cy="44" r="2.4"/><circle cx="70" cy="53" r="2.4"/><circle cx="82" cy="53" r="2.4"/></g>
+        </svg>
+      </div>
+      <div class="name">D · Ball in motion</div>
+      <div class="desc">A struck ball tracing its path — marries object with movement.</div>
+    </div>
+  </div>
+
+  <h2>As app icons (pine)</h2>
+  <div class="icons">
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="82" height="82" viewBox="0 0 120 120" fill="none">
+          <line x1="20" y1="98" x2="104" y2="98" stroke="#3f6b52" stroke-width="3" stroke-linecap="round"/>
+          <path d="M34 98 L96 30" stroke="#d59f42" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round"/>
+          <path d="M34 98 L88 44" stroke="#efe7d4" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="88" cy="44" r="7.5" fill="#efe7d4"/>
+          <circle cx="34" cy="93" r="6.5" fill="#efe7d4"/>
+        </svg>
+      </div><div class="icaption">A · Swing plane</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="82" height="82" viewBox="0 0 120 120" fill="none">
+          <path d="M32 94 C 30 34, 78 24, 90 60" stroke="#efe7d4" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="32" cy="94" r="6.5" fill="#efe7d4"/>
+          <circle cx="55" cy="30.5" r="8" fill="#d59f42"/>
+          <circle cx="90" cy="60" r="6.5" fill="#e0a9b0" opacity=".9"/>
+        </svg>
+      </div><div class="icaption">B · Tracked path</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="82" height="82" viewBox="0 0 120 120" fill="none">
+          <circle cx="55" cy="26" r="9" fill="#efe7d4"/>
+          <path d="M55 36 C 50 50, 48 60, 52 70" stroke="#efe7d4" stroke-width="9" stroke-linecap="round"/>
+          <path d="M52 46 C 66 40, 82 42, 90 34" stroke="#efe7d4" stroke-width="8" stroke-linecap="round"/>
+          <path d="M90 34 L104 20" stroke="#d59f42" stroke-width="5" stroke-linecap="round"/>
+          <path d="M52 68 L44 96" stroke="#efe7d4" stroke-width="9" stroke-linecap="round"/>
+          <path d="M54 68 L70 92" stroke="#efe7d4" stroke-width="9" stroke-linecap="round"/>
+        </svg>
+      </div><div class="icaption">C · The golfer</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="82" height="82" viewBox="0 0 120 120" fill="none">
+          <path d="M22 96 C 34 96, 46 70, 60 60" stroke="#efe7d4" stroke-width="7" stroke-linecap="round" opacity=".85"/>
+          <circle cx="76" cy="48" r="18" fill="#efe7d4"/>
+          <g fill="#1f5138"><circle cx="76" cy="48" r="2.4"/><circle cx="70" cy="44" r="2.4"/><circle cx="82" cy="44" r="2.4"/><circle cx="70" cy="53" r="2.4"/><circle cx="82" cy="53" r="2.4"/></g>
+        </svg>
+      </div><div class="icaption">D · Ball in motion</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Swing Check — logo in context</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe7d4; --surface:#faf5e9; --line:#dccfb0; --ink:#20261f; --muted:#6f6a58;
+    --pine:#1f5138; --clay:#a83c2b; --brass:#b4893c;
+    --serif:'Fraunces', ui-serif, Georgia, serif;
+    --sans:'Inter', -apple-system, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141310;color:#e9e3d3;font-family:var(--sans);padding:34px 20px 90px;-webkit-font-smoothing:antialiased}
+  .title{max-width:1080px;margin:0 auto 4px;font-family:var(--serif);font-weight:600;font-size:30px;color:#f3ecda}
+  .rule{max-width:1080px;margin:0 auto 26px;color:#a49c86;font-size:14.5px}
+  .wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px;justify-items:center}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+  .cap{margin-top:14px;font-size:12.5px;color:#a49c86;text-align:center}
+
+  /* phone frame */
+  .phone{width:300px;height:640px;border-radius:52px;padding:12px;background:#0c0c0c;
+    box-shadow:0 22px 60px rgba(0,0,0,.6), inset 0 0 0 2px #2a2a2a;position:relative}
+  .screen{width:100%;height:100%;border-radius:42px;overflow:hidden;position:relative}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:26px;background:#000;border-radius:16px;z-index:5}
+  .statusbar{position:absolute;top:20px;left:0;right:0;display:flex;justify-content:space-between;padding:0 30px;font-size:12px;font-weight:600;color:#fff;z-index:4}
+
+  /* HOME SCREEN */
+  .home{width:100%;height:100%;
+    background:linear-gradient(160deg,#3a5a44 0%,#243c2c 55%,#1a2c20 100%);
+    padding:64px 26px 30px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 16px}
+  .app{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .ai{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+  .al{font-size:9.5px;color:#fff;opacity:.95}
+  .ph1{background:#e8483a}.ph2{background:#3478f6}.ph3{background:#34c759}.ph4{background:#ff9500}
+  .ph5{background:#5e5ce6}.ph6{background:#ffcc00}.ph7{background:#8e8e93}
+  .dock{position:absolute;bottom:16px;left:16px;right:16px;height:74px;border-radius:26px;
+    background:rgba(255,255,255,.16);backdrop-filter:blur(12px);
+    display:flex;align-items:center;justify-content:space-around;padding:0 16px}
+
+  /* SPLASH */
+  .splash{width:100%;height:100%;background:linear-gradient(160deg,#25603a,#173d29);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+  .splash .eye{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#b4893c}
+  .splash .wm{font-family:var(--serif);font-weight:600;font-size:34px;color:#f4eedd}
+
+  /* IN-APP HEADER */
+  .appview{width:100%;height:100%;background:var(--bg);padding:60px 22px}
+  .hdr{display:flex;align-items:center;gap:12px}
+  .hdr .eye{font-family:var(--sans);font-weight:700;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .hdr .wm{font-family:var(--serif);font-weight:600;font-size:25px;color:var(--ink);line-height:1;margin-top:2px}
+  .seg{margin-top:22px;display:flex;background:#e6ddc6;border-radius:12px;padding:4px}
+  .seg div{flex:1;text-align:center;font-size:12px;font-weight:600;padding:8px;border-radius:9px;color:var(--muted)}
+  .seg .on{background:#fff;color:var(--ink)}
+  .hero{margin-top:26px;font-family:var(--serif);font-weight:600;font-size:34px;color:var(--ink);line-height:1.05}
+  .lede{margin-top:10px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+  .card{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;height:150px}
+</style>
+</head>
+<body>
+  <div class="title">Swing Check — the logo in context</div>
+  <div class="rule">Mark A (swing-check), pine background. Home-screen icon · launch screen · in-app header.</div>
+
+  <div class="wrap">
+
+    <!-- HOME SCREEN -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="home">
+          <div class="statusbar"><span>9:41</span><span>&#9679;&#9679;&#9679; &#128246; &#128267;</span></div>
+          <div class="grid">
+            <div class="app"><div class="ai ph1"></div><div class="al">Messages</div></div>
+            <div class="app"><div class="ai ph2"></div><div class="al">Calendar</div></div>
+            <div class="app"><div class="ai ph3"></div><div class="al">Health</div></div>
+            <div class="app"><div class="ai ph4"></div><div class="al">Weather</div></div>
+            <div class="app">
+              <div class="ai" style="background:#1f5138;padding:0">
+                <svg width="52" height="52" viewBox="0 0 120 120" fill="none"><path d="M26 64 L46 86" stroke="#efe7d4" stroke-width="11" stroke-linecap="round"/><path d="M46 86 C 60 66, 72 40, 92 24" stroke="#efe7d4" stroke-width="11" stroke-linecap="round"/><circle cx="92" cy="24" r="8.5" fill="#b4893c"/></svg>
+              </div>
+              <div class="al" style="font-weight:700">Swing Check</div>
+            </div>
+            <div class="app"><div class="ai ph5"></div><div class="al">Notes</div></div>
+            <div class="app"><div class="ai ph6"></div><div class="al">Photos</div></div>
+            <div class="app"><div class="ai ph7"></div><div class="al">Settings</div></div>
+          </div>
+          <div class="dock">
+            <div class="ai ph2"></div><div class="ai ph1"></div><div class="ai ph3"></div><div class="ai ph4"></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">Home screen — pine icon among stock apps</div>
+    </div>
+
+    <!-- SPLASH -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="splash">
+          <svg width="112" height="112" viewBox="0 0 120 120" fill="none"><path d="M26 64 L46 86" stroke="#f4eedd" stroke-width="10" stroke-linecap="round"/><path d="M46 86 C 60 66, 72 40, 92 24" stroke="#f4eedd" stroke-width="10" stroke-linecap="round"/><circle cx="92" cy="24" r="8" fill="#d59f42"/></svg>
+          <div style="text-align:center">
+            <div class="eye">Swing Lab</div>
+            <div class="wm" style="margin-top:8px">Swing Check</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">Launch screen</div>
+    </div>
+
+    <!-- IN-APP HEADER -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="appview">
+          <div class="statusbar" style="color:#20261f"><span>9:41</span><span>&#9679;&#9679;&#9679; &#128246; &#128267;</span></div>
+          <div class="hdr">
+            <svg width="46" height="46" viewBox="0 0 120 120" fill="none"><path d="M26 64 L46 86" stroke="#1f5138" stroke-width="10" stroke-linecap="round"/><path d="M46 86 C 60 66, 72 40, 92 24" stroke="#1f5138" stroke-width="10" stroke-linecap="round"/><circle cx="92" cy="24" r="8" fill="#b4893c"/></svg>
+            <div><div class="eye">Swing Lab</div><div class="wm">Swing Check</div></div>
+          </div>
+          <div class="seg"><div class="on">Face-on faults</div><div>Down-the-line</div></div>
+          <div class="hero">Read your<br/>swing.</div>
+          <div class="lede">Record a face-on swing. Get your key positions and what to fix — on your phone.</div>
+          <div class="card"></div>
+        </div>
+      </div></div>
+      <div class="cap">In-app header (replaces the plain arc)</div>
+    </div>
+
+  </div>
+</body>
+</html>

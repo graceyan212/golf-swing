@@ -68,14 +68,11 @@ struct ContentView: View {
 
     // MARK: header
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 3) {
-                Eyebrow("Swing Lab")
-                Text("Swing Check").font(.display(30)).foregroundStyle(Palette.chalk)
-            }
-            Spacer()
-            SwingArc().frame(width: 46, height: 46)
+        VStack(alignment: .leading, spacing: 3) {
+            Eyebrow("Swing Lab")
+            Text("Swing Check").font(.display(30)).foregroundStyle(Palette.chalk)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: empty state
@@ -86,7 +83,6 @@ struct ContentView: View {
                 Text("Record a face-on swing. Get your key positions and what to fix — computed on your phone.")
                     .font(.system(size: 16)).foregroundStyle(Palette.mist)
             }
-            SwingArcHero().frame(height: 168).card(0)
             actionButtons
             VStack(alignment: .leading, spacing: 8) {
                 Eyebrow("For a clean read")
@@ -372,36 +368,3 @@ struct FaultCard: View {
     }
 }
 
-// MARK: - Small swing-arc glyph (header)
-struct SwingArc: View {
-    var body: some View {
-        Canvas { ctx, size in
-            let w = size.width, h = size.height
-            var arc = Path()
-            arc.move(to: CGPoint(x: w * 0.18, y: h * 0.86))
-            arc.addQuadCurve(to: CGPoint(x: w * 0.82, y: h * 0.30), control: CGPoint(x: w * 0.16, y: h * 0.10))
-            ctx.stroke(arc, with: .color(Palette.fairway), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            ctx.fill(Path(ellipseIn: CGRect(x: w * 0.82 - 4, y: h * 0.30 - 4, width: 8, height: 8)), with: .color(Palette.amber))
-        }
-    }
-}
-
-// MARK: - Empty-state ambient arc
-struct SwingArcHero: View {
-    var body: some View {
-        Canvas { ctx, size in
-            let w = size.width, h = size.height
-            var ground = Path(); ground.move(to: CGPoint(x: 20, y: h - 22)); ground.addLine(to: CGPoint(x: w - 20, y: h - 22))
-            ctx.stroke(ground, with: .color(Palette.line), lineWidth: 1)
-            let A = CGPoint(x: w * 0.26, y: h - 30), T = CGPoint(x: w * 0.72, y: 26), I = CGPoint(x: w * 0.50, y: h - 30)
-            var arc = Path(); arc.move(to: A)
-            arc.addQuadCurve(to: T, control: CGPoint(x: w * 0.30, y: 18))
-            arc.addQuadCurve(to: I, control: CGPoint(x: w * 0.92, y: h * 0.55))
-            ctx.stroke(arc, with: .color(Palette.fairway.opacity(0.9)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            for (p, lab, c) in [(A, "A", Palette.chalk), (T, "T", Palette.fairway), (I, "I", Palette.amber)] {
-                ctx.fill(Path(ellipseIn: CGRect(x: p.x - 5, y: p.y - 5, width: 10, height: 10)), with: .color(c))
-                ctx.draw(Text(lab).font(.readout(11, .bold)).foregroundColor(Palette.mist), at: CGPoint(x: p.x, y: p.y - 17))
-            }
-        }
-    }
-}

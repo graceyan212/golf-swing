@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Swing Check — golf object marks</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe7d4; --surface:#faf5e9; --line:#dccfb0; --ink:#20261f; --muted:#6f6a58;
+    --pine:#1f5138; --clay:#a83c2b; --brass:#b4893c;
+    --serif:'Fraunces', ui-serif, Georgia, serif; --sans:'Inter', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141310;color:#e9e3d3;font-family:var(--sans);padding:34px 20px 90px;-webkit-font-smoothing:antialiased}
+  .title{max-width:1080px;margin:0 auto 4px;font-family:var(--serif);font-weight:600;font-size:30px;color:#f3ecda}
+  .rule{max-width:1080px;margin:0 auto 28px;color:#a49c86;font-size:14.5px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#7d7660;margin:34px 0 14px}
+  .row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:900px){.row{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--bg);border:1px solid #cabf9f;border-radius:20px;padding:24px 18px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .mk{height:120px;display:flex;align-items:center;justify-content:center}
+  .name{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink)}
+  .desc{font-size:12px;line-height:1.4;color:var(--muted);text-align:center}
+  .icons{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:6px}
+  .icell{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .icon{width:132px;height:132px;border-radius:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+  .icaption{font-size:12px;color:#a49c86}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Swing Check — golf object marks</div>
+  <div class="rule">Four marks built from a real golf artifact, drawn simply in the Fairway Heritage palette. Pick a favorite and I'll refine it + show it as an app icon.</div>
+
+  <h2>Four marks</h2>
+  <div class="row">
+
+    <!-- A: ball on tee -->
+    <div class="card">
+      <div class="mk">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="45" r="22" fill="#1f5138"/>
+          <circle cx="53" cy="39" r="3.2" fill="#ffffff" opacity=".22"/>
+          <path d="M49 70 Q60 80 71 70 L65 77 L62 100 L58 100 L55 77 Z" fill="#b4893c"/>
+        </svg>
+      </div>
+      <div class="name">A · Ball on a tee</div>
+      <div class="desc">The first move of every swing. Pine ball, brass tee.</div>
+    </div>
+
+    <!-- B: flag on green -->
+    <div class="card">
+      <div class="mk">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <path d="M16 96 Q60 78 104 96" stroke="#1f5138" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="60" cy="90" rx="7" ry="2.4" fill="#20261f"/>
+          <line x1="60" y1="90" x2="60" y2="22" stroke="#20261f" stroke-width="4" stroke-linecap="round"/>
+          <path d="M60 24 L94 33 L60 43 Z" fill="#a83c2b"/>
+        </svg>
+      </div>
+      <div class="name">B · Flag on the green</div>
+      <div class="desc">The target. Clay pennant, pine green, ink pin.</div>
+    </div>
+
+    <!-- C: dimpled ball -->
+    <div class="card">
+      <div class="mk">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="36" fill="#1f5138"/>
+          <g fill="#efe7d4">
+            <circle cx="60" cy="60" r="4.6"/>
+            <circle cx="60" cy="42" r="4.6"/><circle cx="60" cy="78" r="4.6"/>
+            <circle cx="45.5" cy="51" r="4.6"/><circle cx="74.5" cy="51" r="4.6"/>
+            <circle cx="45.5" cy="69" r="4.6"/><circle cx="74.5" cy="69" r="4.6"/>
+          </g>
+          <circle cx="60" cy="60" r="36" stroke="#163d2a" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="name">C · Dimpled ball</div>
+      <div class="desc">The ball itself, distilled to its dimples. Modern.</div>
+    </div>
+
+    <!-- D: driver head -->
+    <div class="card">
+      <div class="mk">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <line x1="44" y1="52" x2="30" y2="26" stroke="#b4893c" stroke-width="5" stroke-linecap="round"/>
+          <path d="M40 80 Q30 58 50 50 Q84 40 96 64 Q102 86 72 90 Q50 93 40 80 Z" fill="#1f5138"/>
+          <ellipse cx="60" cy="98" rx="8" ry="2.4" fill="#20261f" opacity=".25"/>
+        </svg>
+      </div>
+      <div class="name">D · Driver head</div>
+      <div class="desc">The instrument. Bold silhouette, brass shaft.</div>
+    </div>
+  </div>
+
+  <h2>Same four, as app icons (pine)</h2>
+  <div class="icons">
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="80" height="80" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="45" r="22" fill="#efe7d4"/>
+          <path d="M49 70 Q60 80 71 70 L65 77 L62 100 L58 100 L55 77 Z" fill="#b4893c"/>
+        </svg>
+      </div><div class="icaption">A · Ball on tee</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="80" height="80" viewBox="0 0 120 120" fill="none">
+          <path d="M16 96 Q60 78 104 96" stroke="#efe7d4" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="60" cy="90" rx="7" ry="2.4" fill="#0e2419"/>
+          <line x1="60" y1="90" x2="60" y2="22" stroke="#efe7d4" stroke-width="4" stroke-linecap="round"/>
+          <path d="M60 24 L94 33 L60 43 Z" fill="#d59f42"/>
+        </svg>
+      </div><div class="icaption">B · Flag</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="80" height="80" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="36" fill="#efe7d4"/>
+          <g fill="#1f5138">
+            <circle cx="60" cy="60" r="4.6"/><circle cx="60" cy="42" r="4.6"/><circle cx="60" cy="78" r="4.6"/>
+            <circle cx="45.5" cy="51" r="4.6"/><circle cx="74.5" cy="51" r="4.6"/>
+            <circle cx="45.5" cy="69" r="4.6"/><circle cx="74.5" cy="69" r="4.6"/>
+          </g>
+        </svg>
+      </div><div class="icaption">C · Dimpled ball</div>
+    </div>
+    <div class="icell">
+      <div class="icon" style="background:#1f5138">
+        <svg width="80" height="80" viewBox="0 0 120 120" fill="none">
+          <line x1="44" y1="52" x2="30" y2="26" stroke="#d59f42" stroke-width="5" stroke-linecap="round"/>
+          <path d="M40 80 Q30 58 50 50 Q84 40 96 64 Q102 86 72 90 Q50 93 40 80 Z" fill="#efe7d4"/>
+        </svg>
+      </div><div class="icaption">D · Driver</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
