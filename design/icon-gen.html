@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"/>
+<style>*{margin:0;padding:0}html,body{width:1024px;height:1024px;overflow:hidden}</style></head>
+<body><div id="root"></div>
+<script>
+function dimples(cx,cy,R,dr,fill){
+  const r1=R*0.34, r2=R*0.63, pts=[[0,0]];
+  for(let i=0;i<6;i++){const a=Math.PI/3*i; pts.push([r1*Math.cos(a), r1*Math.sin(a)]);}
+  for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6; pts.push([r2*Math.cos(a), r2*Math.sin(a)]);}
+  return '<g fill="'+fill+'">'+pts.map(p=>`<circle cx="${(cx+p[0]).toFixed(2)}" cy="${(cy+p[1]).toFixed(2)}" r="${dr}"/>`).join('')+'</g>';
+}
+const cream='#EFE7D4', pine='#1F5138';
+// clear check: left arm down from upper-left, rounded valley, sweep up to ball
+const d = "M24 58 C 34 80, 46 90, 55 87 C 66 83, 74 56, 84 40";
+const ball=[90,28], br=16;
+const mark = `<path d="${d}" fill="none" stroke="${cream}" stroke-width="10" stroke-linecap="round"/>`
+           + `<circle cx="${ball[0]}" cy="${ball[1]}" r="${br}" fill="${cream}"/>`
+           + dimples(ball[0],ball[1],br,1.8,pine);
+document.getElementById('root').innerHTML =
+ `<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1024" height="1024" fill="${pine}"/>
+    <g transform="translate(150,205) scale(6.0)">${mark}</g>
+  </svg>`;
+</script></body></html>
