@@ -10,8 +10,12 @@ targets:
     platform: iOS
     sources:
       - path: Sources
+      - path: Resources/ClubDetector.mlpackage   # CoreML model — Xcode compiles it to .mlmodelc
       - path: Resources
         buildPhase: resources
+        excludes:
+          - "ClubDetector.mlpackage"
+          - "ClubDetector.md"
     info:
       path: Generated/Info.plist
       properties:

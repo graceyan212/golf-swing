@@ -22,6 +22,7 @@ struct ContentView: View {
     @StateObject private var analyzer = Analyzer()
     @State private var pickerItem: PhotosPickerItem?
     @State private var showCamera = false
+    @State private var mode = 0   // 0 = face-on faults, 1 = down-the-line plane
 
     static let bones: [(String, String)] = [
         ("lsh", "rsh"), ("lsh", "lhip"), ("rsh", "rhip"), ("lhip", "rhip"),
@@ -37,8 +38,17 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
-                    if analyzer.busy { analyzingCard }
-                    if hasResult { results } else if !analyzer.busy { emptyState }
+                    Picker("Mode", selection: $mode) {
+                        Text("Face-on faults").tag(0)
+                        Text("Down-the-line").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    if mode == 1 {
+                        DownTheLineSection()
+                    } else {
+                        if analyzer.busy { analyzingCard }
+                        if hasResult { results } else if !analyzer.busy { emptyState }
+                    }
                 }
                 .padding(20)
             }
@@ -52,6 +62,7 @@ struct ContentView: View {
         .onAppear {
             if CommandLine.arguments.contains("-uidemo") { analyzer.loadUIDemo() }
             else if CommandLine.arguments.contains("-autodemo") { runDemo() }
+            if CommandLine.arguments.contains("-dtldemo") { mode = 1 }
         }
     }
 
