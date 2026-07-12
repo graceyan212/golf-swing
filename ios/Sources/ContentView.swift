@@ -78,10 +78,9 @@ struct ContentView: View {
 
     private var demoURL: URL? { Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") }
 
-    // MARK: header
+    // MARK: header — the logo (mark + small wordmark), a brand bar above the hero
     private var header: some View {
-        Text("Swing Check").font(.display(34)).foregroundStyle(Palette.chalk)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        Wordmark(glyph: 42).padding(.bottom, 2)
     }
 
     // MARK: landing — one place to add a video
