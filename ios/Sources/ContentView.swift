@@ -209,10 +209,38 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             SwingCanvas(image: currentThumb, frame: currentPlayFrame)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Text("Slide to watch your swing").font(.system(size: 16)).foregroundStyle(Palette.mist)
+            Text("Slide to watch, or tap a moment below").font(.system(size: 16)).foregroundStyle(Palette.mist)
             Filmstrip(thumbs: analyzer.frameThumbs, total: analyzer.frames.count,
                       playhead: $analyzer.playhead, events: analyzer.events)
+            HStack(spacing: 8) { ForEach(SwingEvent.allCases) { keyMomentButton($0) } }
         }.card(10)
+    }
+
+    private func eventColor(_ e: SwingEvent) -> Color {
+        switch e { case .address: return Palette.chalk; case .top: return Palette.fairway; case .impact: return Palette.amber }
+    }
+    private func eventLabel(_ e: SwingEvent) -> String {
+        switch e { case .address: return "Address"; case .top: return "Top"; case .impact: return "Impact" }
+    }
+
+    // Jump the scrubber to a key moment the app found (Address / Top / Impact). Read-only.
+    private func keyMomentButton(_ e: SwingEvent) -> some View {
+        let idx = analyzer.events[e]
+        let here = idx != nil && analyzer.playhead == idx
+        return Button {
+            if let i = idx { withAnimation(.easeInOut(duration: 0.2)) { analyzer.playhead = i } }
+        } label: {
+            HStack(spacing: 6) {
+                Circle().fill(eventColor(e)).frame(width: 8, height: 8)
+                Text(eventLabel(e)).font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundStyle(Palette.chalk)
+            .frame(maxWidth: .infinity).padding(.vertical, 11)
+            .background(here ? Palette.surface2 : Palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(here ? eventColor(e) : Palette.line, lineWidth: here ? 2 : 1))
+        }.buttonStyle(.plain).disabled(idx == nil)
     }
 
     private var diagnosis: some View {
