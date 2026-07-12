@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var videoURL: URL?      // the video the user added
     @State private var shot: Shot?         // front/side, auto-detected after the video is added
     @State private var detecting = false   // running the front/side auto-detect
+    @State private var adjusting = false   // manually moving Address/Top/Impact
 
     static let bones: [(String, String)] = [
         ("lsh", "rsh"), ("lsh", "lhip"), ("rsh", "rhip"), ("lhip", "rhip"),
@@ -209,7 +210,17 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             SwingCanvas(image: currentThumb, frame: currentPlayFrame)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Text("Slide to watch, or tap a moment below").font(.system(size: 16)).foregroundStyle(Palette.mist)
+            HStack(alignment: .top, spacing: 8) {
+                Text(adjusting ? "Slide to the right picture, then tap the moment to move it here."
+                               : "Slide to watch, or tap a moment to see it.")
+                    .font(.system(size: 16)).foregroundStyle(Palette.mist)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
+                Button { withAnimation { adjusting.toggle() } } label: {
+                    Text(adjusting ? "Done" : "Adjust")
+                        .font(.system(size: 15, weight: .semibold)).foregroundStyle(Palette.fairway)
+                }
+            }
             Filmstrip(thumbs: analyzer.frameThumbs, total: analyzer.frames.count,
                       playhead: $analyzer.playhead, events: analyzer.events)
             HStack(spacing: 8) { ForEach(SwingEvent.allCases) { keyMomentButton($0) } }
@@ -223,24 +234,27 @@ struct ContentView: View {
         switch e { case .address: return "Address"; case .top: return "Top"; case .impact: return "Impact" }
     }
 
-    // Jump the scrubber to a key moment the app found (Address / Top / Impact). Read-only.
+    // Tap to jump to a key moment; in Adjust mode, tap to move that moment to the
+    // current frame (which re-grades the swing).
     private func keyMomentButton(_ e: SwingEvent) -> some View {
         let idx = analyzer.events[e]
         let here = idx != nil && analyzer.playhead == idx
         return Button {
-            if let i = idx { withAnimation(.easeInOut(duration: 0.2)) { analyzer.playhead = i } }
+            if adjusting { analyzer.assign(e, frame: analyzer.playhead) }
+            else if let i = idx { withAnimation(.easeInOut(duration: 0.2)) { analyzer.playhead = i } }
         } label: {
             HStack(spacing: 6) {
                 Circle().fill(eventColor(e)).frame(width: 8, height: 8)
                 Text(eventLabel(e)).font(.system(size: 15, weight: .semibold))
+                if adjusting { Image(systemName: "pencil").font(.system(size: 11, weight: .bold)) }
             }
             .foregroundStyle(Palette.chalk)
             .frame(maxWidth: .infinity).padding(.vertical, 11)
             .background(here ? Palette.surface2 : Palette.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(here ? eventColor(e) : Palette.line, lineWidth: here ? 2 : 1))
-        }.buttonStyle(.plain).disabled(idx == nil)
+                .stroke((here || adjusting) ? eventColor(e) : Palette.line, lineWidth: (here || adjusting) ? 2 : 1))
+        }.buttonStyle(.plain).disabled(idx == nil && !adjusting)
     }
 
     private var diagnosis: some View {
@@ -296,7 +310,7 @@ struct ContentView: View {
     }
 
     private func resetAll() {
-        videoURL = nil; shot = nil; detecting = false; pickerItem = nil
+        videoURL = nil; shot = nil; detecting = false; adjusting = false; pickerItem = nil
         analyzer.reset(); plane.reset()
     }
 }
