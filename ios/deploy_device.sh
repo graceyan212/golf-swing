@@ -11,8 +11,10 @@ PROF="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/d3351ce1-ee93
 APP=/tmp/SwingCheck.app
 
 echo "▸ Building…"
+# ENABLE_DEBUG_DYLIB=NO -> single signed binary (no unsigned SwingCheck.debug.dylib
+# that dyld would reject on a real device).
 xcodebuild -project SwingCheck.xcodeproj -scheme SwingCheck -configuration Debug \
-  -sdk iphoneos -derivedDataPath build-dev CODE_SIGNING_ALLOWED=NO build \
+  -sdk iphoneos -derivedDataPath build-dev CODE_SIGNING_ALLOWED=NO ENABLE_DEBUG_DYLIB=NO build \
   >/tmp/swingcheck_build.log 2>&1 || { echo "✗ Build failed:"; grep -E "error:" /tmp/swingcheck_build.log | head; exit 1; }
 
 SRC=build-dev/Build/Products/Debug-iphoneos/SwingCheck.app
@@ -21,6 +23,9 @@ rm -rf "$APP"; ditto "$SRC" "$APP"
 cp "$PROF" "$APP/embedded.mobileprovision"
 find "$APP" -print0 | xargs -0 xattr -c 2>/dev/null || true
 security cms -D -i "$PROF" 2>/dev/null | plutil -extract Entitlements xml1 -o /tmp/swingcheck_ent.plist -
+# Sign any nested code first (dylibs/frameworks), then the app bundle.
+find "$APP" \( -name "*.dylib" -o -name "*.framework" -o -name "*.appex" \) -print0 2>/dev/null \
+  | xargs -0 -I{} codesign --force --sign "$IDENT" --timestamp=none "{}" 2>/dev/null || true
 codesign --force --sign "$IDENT" --entitlements /tmp/swingcheck_ent.plist --generate-entitlement-der "$APP" >/dev/null 2>&1
 codesign -v --strict "$APP" || { echo "✗ Signing failed"; exit 1; }
 
