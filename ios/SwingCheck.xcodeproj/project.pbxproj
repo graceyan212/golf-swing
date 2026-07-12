@@ -10,11 +10,13 @@
 		056BF007517D75159A985260 /* CameraRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 316E6D5DC29F2D5BB4C35AF8 /* CameraRecorder.swift */; };
 		22D8C24063D22AED7D410D00 /* demo_swing.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6B8050982BE2A56733AB1B0E /* demo_swing.mp4 */; };
 		30FCEC56FE6509E2CFDD74F0 /* ClubDetector.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 144BA512EA8A33383DC21C75 /* ClubDetector.mlpackage */; };
+		4630F56ED40929CD34C24CB3 /* Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB967DCB26DEF389102DCD6D /* Onboarding.swift */; };
 		64E73BD865A92B068E64767A /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34503C20BC7C25D601F1C97 /* Analyzer.swift */; };
 		66E8E0848798E8099B0E238E /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC2746E7F13CA341BC63BCC /* Logo.swift */; };
 		6D76D520CE4A1CC977C78E52 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA12AA7690E8A99AE0A3022 /* Theme.swift */; };
 		87C1DC37F80F206B57DC3A00 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6D90D16410C132D579BE0A /* ContentView.swift */; };
 		8C9773C794ECAF4AB8EFCCCC /* Biomechanics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */; };
+		A83BF5A1E9DCE028BA412A89 /* History.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B871327024580A6BFDBA448 /* History.swift */; };
 		B487B614D31DE31A8D52332D /* ClubTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252782ED3AA83F607869260B /* ClubTracker.swift */; };
 		C1C2CD828711CC3E7872EF0B /* OrientationDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11AA5DF9772D7126F209AEE /* OrientationDetector.swift */; };
 		DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B283D2906D0DCD962321D /* Models.swift */; };
@@ -31,6 +33,7 @@
 		316E6D5DC29F2D5BB4C35AF8 /* CameraRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraRecorder.swift; sourceTree = "<group>"; };
 		5D7B283D2906D0DCD962321D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		6B8050982BE2A56733AB1B0E /* demo_swing.mp4 */ = {isa = PBXFileReference; path = demo_swing.mp4; sourceTree = "<group>"; };
+		6B871327024580A6BFDBA448 /* History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = History.swift; sourceTree = "<group>"; };
 		7EC2746E7F13CA341BC63BCC /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		8A5A1CE4755B9D4D0E830FB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A0F5A9B34E3DA7E74297A8B4 /* Biomechanics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Biomechanics.swift; sourceTree = "<group>"; };
@@ -41,6 +44,7 @@
 		E219413FA4175502E9EC3197 /* PoseExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseExtractor.swift; sourceTree = "<group>"; };
 		E37CDEF38CAD7FC03BD1A09A /* DownTheLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownTheLine.swift; sourceTree = "<group>"; };
 		FA6D90D16410C132D579BE0A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FB967DCB26DEF389102DCD6D /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -80,8 +84,10 @@
 				252782ED3AA83F607869260B /* ClubTracker.swift */,
 				FA6D90D16410C132D579BE0A /* ContentView.swift */,
 				E37CDEF38CAD7FC03BD1A09A /* DownTheLine.swift */,
+				6B871327024580A6BFDBA448 /* History.swift */,
 				7EC2746E7F13CA341BC63BCC /* Logo.swift */,
 				5D7B283D2906D0DCD962321D /* Models.swift */,
+				FB967DCB26DEF389102DCD6D /* Onboarding.swift */,
 				C11AA5DF9772D7126F209AEE /* OrientationDetector.swift */,
 				E219413FA4175502E9EC3197 /* PoseExtractor.swift */,
 				1F39AFA1C1C94B64A1A194FB /* SwingCheckApp.swift */,
@@ -168,8 +174,10 @@
 				B487B614D31DE31A8D52332D /* ClubTracker.swift in Sources */,
 				87C1DC37F80F206B57DC3A00 /* ContentView.swift in Sources */,
 				FA9D900F5B7EBD300D6B0B21 /* DownTheLine.swift in Sources */,
+				A83BF5A1E9DCE028BA412A89 /* History.swift in Sources */,
 				66E8E0848798E8099B0E238E /* Logo.swift in Sources */,
 				DC781A381CDC18FF7BBA7662 /* Models.swift in Sources */,
+				4630F56ED40929CD34C24CB3 /* Onboarding.swift in Sources */,
 				C1C2CD828711CC3E7872EF0B /* OrientationDetector.swift in Sources */,
 				EE966199A8971ECB97DEA35B /* PoseExtractor.swift in Sources */,
 				F324444A8107CFA92EAE4B64 /* SwingCheckApp.swift in Sources */,

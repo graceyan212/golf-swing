@@ -29,6 +29,10 @@ struct ContentView: View {
     @State private var shot: Shot?         // front/side, auto-detected after the video is added
     @State private var detecting = false   // running the front/side auto-detect
     @State private var adjusting = false   // manually moving Address/Top/Impact
+    @StateObject private var history = HistoryStore()
+    @State private var showHistory = false
+    @AppStorage("seenOnboardingV1") private var seenOnboarding = false
+    @State private var showOnboarding = false
 
     static let bones: [(String, String)] = [
         ("lsh", "rsh"), ("lsh", "lhip"), ("rsh", "rhip"), ("lhip", "rhip"),
@@ -66,10 +70,24 @@ struct ContentView: View {
         .preferredColorScheme(.light)
         .tint(Palette.fairway)
         .onChange(of: pickerItem) { _, item in loadPicked(item) }
+        .onChange(of: analyzer.busy) { _, busy in
+            if !busy, shot == .front, hasFrontResult { saveFrontRecord() }
+        }
+        .onChange(of: plane.busy) { _, busy in
+            if !busy, shot == .side, hasSideResult { saveSideRecord() }
+        }
         .fullScreenCover(isPresented: $showCamera) {
             CameraRecorder { url in addVideo(url) }.ignoresSafeArea()
         }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView { seenOnboarding = true; showOnboarding = false }
+        }
+        .sheet(isPresented: $showHistory) {
+            HistoryView(store: history) { showHistory = false }
+        }
         .onAppear {
+            let demo = CommandLine.arguments.contains { ["-uidemo", "-autodemo", "-dtldemo", "-detectdemo"].contains($0) }
+            if !seenOnboarding && !demo { showOnboarding = true }
             if CommandLine.arguments.contains("-uidemo") { analyzer.loadUIDemo(); shot = .front }
             else if CommandLine.arguments.contains("-autodemo"), let u = demoURL { videoURL = u; shot = .front; analyzer.analyze(url: u) }
             else if CommandLine.arguments.contains("-dtldemo"), let u = demoURL { videoURL = u; shot = .side; plane.analyze(url: u) }
@@ -79,9 +97,15 @@ struct ContentView: View {
 
     private var demoURL: URL? { Bundle.main.url(forResource: "demo_swing", withExtension: "mp4") }
 
-    // MARK: header — the logo (mark + small wordmark), a brand bar above the hero
+    // MARK: header — the logo (mark + small wordmark) + history button
     private var header: some View {
-        Wordmark(glyph: 42).padding(.bottom, 2)
+        HStack(spacing: 8) {
+            Wordmark(glyph: 42)
+            Button { showHistory = true } label: {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 21, weight: .semibold)).foregroundStyle(Palette.fairway)
+            }
+        }.padding(.bottom, 2)
     }
 
     // MARK: landing — one place to add a video
@@ -312,6 +336,26 @@ struct ContentView: View {
     private func resetAll() {
         videoURL = nil; shot = nil; detecting = false; adjusting = false; pickerItem = nil
         analyzer.reset(); plane.reset()
+    }
+
+    // MARK: save to history
+    private func thumbAt(_ arr: [UIImage?], _ i: Int) -> UIImage? {
+        if i >= 0, i < arr.count, let t = arr[i] { return t }
+        return arr.compactMap { $0 }.first
+    }
+    private func saveFrontRecord() {
+        let n = analyzer.faults.count
+        let headline = n == 0 ? "Looking good!" : "\(n) thing\(n == 1 ? "" : "s") to work on"
+        let detail = n == 0 ? "No big problems." : analyzer.faults.map { $0.name }.joined(separator: " · ")
+        history.add(kind: "front", headline: headline, detail: detail,
+                    thumb: thumbAt(analyzer.frameThumbs, analyzer.events[.address] ?? analyzer.playhead))
+    }
+    private func saveSideRecord() {
+        let headline = plane.planeLine == nil ? "Couldn't follow the club"
+                       : (plane.overTop ? "Coming over the top" : "Good swing path")
+        let detail = plane.planeLine == nil ? "Try filming from behind, club in view."
+                     : (plane.overTop ? "Club swings out and over on the way down." : "Nice path down to the ball.")
+        history.add(kind: "side", headline: headline, detail: detail, thumb: thumbAt(plane.thumbs, plane.playhead))
     }
 }
 
